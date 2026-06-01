@@ -385,7 +385,7 @@ function ContactSection({ isMobile, isTablet }) {
           I'm interested in full-time opportunities, freelance projects, and creative collaborations.
         </p>
         <p style={{ fontSize: '15px', color: '#999', lineHeight: 1.8, marginBottom: '16px' }}>
-          As a designer, I'm focused on building useful systems that enhance your ability to accomplish what you need to.
+          As a designer, I'm focused on building useful systems that enhance your ability to accomplish what you need.
         </p>
         <p style={{ fontSize: '15px', color: '#999', lineHeight: 1.8 }}>
           I like to work with engineers and product teams collaboratively. My approach is to observe and understand team dynamics, identify constraints to work within, and facilitate thoughtful decision-making.
