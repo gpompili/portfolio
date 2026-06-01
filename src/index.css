@@ -1,0 +1,124 @@
+/* ── Cerebri Sans ─────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Light Italic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Book.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Book Italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Regular.otf') format('opentype');
+  font-weight: 450;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Italic.otf') format('opentype');
+  font-weight: 450;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Medium Italic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans SemiBold Italic.otf') format('opentype');
+  font-weight: 600;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Bold Italic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans ExtraBold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans ExtraBold Italic.otf') format('opentype');
+  font-weight: 800;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Heavy.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cerebri Sans';
+  src: url('/assets/Cerebri/Hanken Design Co. - Cerebri Sans Heavy Italic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Cerebri Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #0d0d0d;
+  color: #ffffff;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  font-family: inherit;
+}
