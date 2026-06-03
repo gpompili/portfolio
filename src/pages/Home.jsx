@@ -640,20 +640,22 @@ export default function Home() {
           margin: '0 auto',
         }}
       >
-        <div style={{ width: isMobile ? '100%' : isTablet ? '220px' : '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
-          <h1
-            style={{
-              fontSize: isMobile ? '34px' : isTablet ? '36px' : '44px',
-              fontWeight: 800,
-              color: '#fff',
-              lineHeight: 1.15,
-              marginBottom: '6px',
-            }}
-          >
-            Gabriel Pompilius
-          </h1>
-          <p style={{ fontSize: isMobile ? '20px' : isTablet ? '22px' : '26px', color: '#666', fontWeight: 500 }}>Product Designer</p>
-        </div>
+        {!(isMobile || isTablet) && (
+          <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+            <h1
+              style={{
+                fontSize: '44px',
+                fontWeight: 800,
+                color: '#fff',
+                lineHeight: 1.15,
+                marginBottom: '6px',
+              }}
+            >
+              Gabriel Pompilius
+            </h1>
+            <p style={{ fontSize: '26px', color: '#666', fontWeight: 500 }}>Product Designer</p>
+          </div>
+        )}
 
         <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start' }}>
           <h2
