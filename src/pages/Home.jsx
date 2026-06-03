@@ -83,7 +83,137 @@ const interests = [
 
 // ─── Nav ─────────────────────────────────────────────────────────────────────
 
-function Nav({ scrolled, activeSection, onNavClick, isMobile }) {
+function Nav({ scrolled, activeSection, onNavClick, isMobile, isTablet }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const isCompact = isMobile || isTablet
+
+  const handleNavClick = (id) => {
+    setMenuOpen(false)
+    onNavClick(id)
+  }
+
+  if (isCompact) {
+    return (
+      <nav
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          backgroundColor: 'rgba(13,13,13,0.82)',
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          transition: 'background-color 0.25s ease',
+        }}
+      >
+        {/* Top bar */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '14px 20px',
+          }}
+        >
+          <button
+            onClick={() => { setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
+          >
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff', lineHeight: 1.3 }}>
+              Gabriel Pompilius
+            </div>
+            <div style={{ fontSize: '11px', color: '#666', marginTop: '1px' }}>Product Designer</div>
+          </button>
+
+          {/* Hamburger */}
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '6px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '5px',
+              alignItems: 'flex-end',
+            }}
+            aria-label="Toggle menu"
+          >
+            <span style={{
+              display: 'block',
+              width: menuOpen ? '20px' : '22px',
+              height: '2px',
+              background: '#fff',
+              borderRadius: '2px',
+              transform: menuOpen ? 'translateY(7px) rotate(45deg)' : 'none',
+              transition: 'transform 0.2s ease, width 0.2s ease',
+            }} />
+            <span style={{
+              display: 'block',
+              width: '16px',
+              height: '2px',
+              background: '#fff',
+              borderRadius: '2px',
+              opacity: menuOpen ? 0 : 1,
+              transition: 'opacity 0.15s ease',
+            }} />
+            <span style={{
+              display: 'block',
+              width: menuOpen ? '20px' : '22px',
+              height: '2px',
+              background: '#fff',
+              borderRadius: '2px',
+              transform: menuOpen ? 'translateY(-7px) rotate(-45deg)' : 'none',
+              transition: 'transform 0.2s ease, width 0.2s ease',
+            }} />
+          </button>
+        </div>
+
+        {/* Dropdown menu */}
+        <div
+          style={{
+            overflow: 'hidden',
+            maxHeight: menuOpen ? '200px' : '0px',
+            transition: 'max-height 0.28s ease',
+          }}
+        >
+          <div style={{ padding: '4px 20px 16px' }}>
+            {['Work', 'About', 'Contact'].map((label) => {
+              const id = label.toLowerCase()
+              const isActive = activeSection === id
+              return (
+                <button
+                  key={id}
+                  onClick={() => handleNavClick(id)}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    background: 'none',
+                    border: 'none',
+                    color: isActive ? '#fff' : '#777',
+                    fontSize: '16px',
+                    fontWeight: isActive ? 600 : 400,
+                    padding: '10px 0',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    transition: 'color 0.15s ease',
+                  }}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </nav>
+    )
+  }
+
+  // Desktop nav
   return (
     <nav
       style={{
@@ -92,7 +222,7 @@ function Nav({ scrolled, activeSection, onNavClick, isMobile }) {
         left: 0,
         right: 0,
         zIndex: 100,
-        padding: isMobile ? '18px 20px' : '18px 40px',
+        padding: '18px 40px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: scrolled ? 'space-between' : 'flex-end',
@@ -127,9 +257,9 @@ function Nav({ scrolled, activeSection, onNavClick, isMobile }) {
                 background: isActive ? '#272727' : 'transparent',
                 border: 'none',
                 color: isActive ? '#fff' : '#777',
-                fontSize: isMobile ? '13px' : '14px',
+                fontSize: '14px',
                 fontWeight: 500,
-                padding: isMobile ? '6px 10px' : '7px 14px',
+                padding: '7px 14px',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 transition: 'background 0.15s ease, color 0.15s ease',
@@ -496,13 +626,13 @@ export default function Home() {
 
   return (
     <div style={{ background: '#0d0d0d', minHeight: '100vh', color: '#fff' }}>
-      <Nav scrolled={scrolled} activeSection={activeSection} onNavClick={scrollToSection} isMobile={isMobile} />
+      <Nav scrolled={scrolled} activeSection={activeSection} onNavClick={scrollToSection} isMobile={isMobile} isTablet={isTablet} />
 
       {/* ── Hero ── */}
       <section
         ref={heroRef}
         style={{
-          padding: isMobile ? '110px 20px 72px' : isTablet ? '130px 32px 80px' : '150px 40px 100px',
+          padding: isMobile ? '90px 20px 72px' : isTablet ? '100px 32px 80px' : '150px 40px 100px',
           display: 'flex',
           flexDirection: isMobile ? 'column' : 'row',
           gap: isMobile ? '24px' : isTablet ? '40px' : '60px',
