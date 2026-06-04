@@ -107,9 +107,9 @@ function CaseStudyNav({ isMobile }) {
 function Label({ children, style }) {
   return (
     <div style={{
-      fontSize: '10px',
+      fontSize: '11px',
       fontWeight: 700,
-      color: '#aaa',
+      color: '#5d728e',
       letterSpacing: '0.1em',
       textTransform: 'uppercase',
       marginBottom: '10px',
@@ -182,25 +182,42 @@ function SectionTitle({ title, subtitle, isMobile, isTablet }) {
 
 function HoverImage({ src, alt, style, onClick, noShadow }) {
   const [hovered, setHovered] = useState(false)
+
+  if (noShadow) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        onClick={onClick}
+        style={{ ...style, cursor: 'pointer', display: 'block' }}
+      />
+    )
+  }
+
+  // Wrap in a div so border-radius clips the image cleanly (img tags don't reliably clip)
+  const { width, height, flexShrink, display, ...restStyle } = style || {}
   return (
-    <img
-      src={src}
-      alt={alt}
+    <div
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        ...style,
-        ...(noShadow ? {} : {
-          borderRadius: '27px',
-          boxShadow: hovered
-            ? '0 12px 40px rgba(0,0,0,0.22)'
-            : '0 4px 18px rgba(0,0,0,0.14)',
-          transition: 'box-shadow 0.2s ease',
-        }),
+        width,
+        height,
+        flexShrink,
+        borderRadius: '27px',
+        overflow: 'hidden',
+        boxShadow: hovered
+          ? '0 12px 40px rgba(0,0,0,0.22)'
+          : '0 4px 18px rgba(0,0,0,0.14)',
+        transition: 'box-shadow 0.2s ease',
         cursor: 'pointer',
+        display: 'block',
+        ...restStyle,
       }}
-    />
+    >
+      <img src={src} alt={alt} style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }} />
+    </div>
   )
 }
 
