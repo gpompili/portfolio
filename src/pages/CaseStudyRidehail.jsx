@@ -106,7 +106,16 @@ function CaseStudyNav({ isMobile }) {
 
 function Label({ children, style }) {
   return (
-    <div style={{ fontSize: '15px', fontWeight: 500, color: TEXT_LABEL, marginBottom: '10px', marginTop: '28px', ...style }}>
+    <div style={{
+      fontSize: '10px',
+      fontWeight: 700,
+      color: '#aaa',
+      letterSpacing: '0.1em',
+      textTransform: 'uppercase',
+      marginBottom: '10px',
+      marginTop: '32px',
+      ...style,
+    }}>
       {children}
     </div>
   )
@@ -114,26 +123,26 @@ function Label({ children, style }) {
 
 function NumberedItem({ n, bold, children }) {
   return (
-    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '10px' }}>
+    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '12px' }}>
       <div
         style={{
-          width: '24px',
-          height: '24px',
+          width: '22px',
+          height: '22px',
           borderRadius: '50%',
           border: '1.5px solid #ccc',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '12px',
+          fontSize: '11px',
           fontWeight: 500,
-          color: '#999',
+          color: '#bbb',
           flexShrink: 0,
-          marginTop: '2px',
+          marginTop: '1px',
         }}
       >
         {n}
       </div>
-      <div style={{ fontSize: '14px', lineHeight: 1.65, color: bold ? TEXT_DARK : TEXT_MID, fontWeight: bold ? 700 : 400 }}>
+      <div style={{ fontSize: '15px', lineHeight: 1.65, color: bold ? TEXT_DARK : TEXT_MID, fontWeight: bold ? 600 : 400 }}>
         {children}
       </div>
     </div>
@@ -162,7 +171,7 @@ function SectionTitle({ title, subtitle, isMobile, isTablet }) {
       >
         {title}
       </h2>
-      <p style={{ fontSize: isMobile ? '18px' : '21px', fontWeight: 600, color: '#333' }}>
+      <p style={{ fontSize: isMobile ? '18px' : '21px', fontWeight: 600, color: TEXT_MID }}>
         {subtitle}
       </p>
     </div>
@@ -187,8 +196,7 @@ function HoverImage({ src, alt, style, onClick, noShadow }) {
           boxShadow: hovered
             ? '0 12px 40px rgba(0,0,0,0.22)'
             : '0 4px 18px rgba(0,0,0,0.14)',
-          filter: hovered ? 'brightness(1.03)' : 'brightness(1)',
-          transition: 'box-shadow 0.2s ease, filter 0.2s ease',
+          transition: 'box-shadow 0.2s ease',
         }),
         cursor: 'pointer',
       }}
@@ -392,18 +400,20 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
 
   const total = effectiveSlides.length
   const [current, setCurrent] = useState(0)
-  const containerRef = useRef(null)
+  const outerRef = useRef(null)  // arrow anchor (not clipped)
+  const trackRef = useRef(null)  // overflow hidden clip + wheel/touch target
 
-  // Clamp index on breakpoint change
-  const safeIndex = Math.min(current, total - 1)
-  if (safeIndex !== current) setCurrent(safeIndex)
+  // Clamp on slide count change
+  useEffect(() => {
+    setCurrent((c) => Math.min(c, total - 1))
+  }, [total])
 
   // Horizontal wheel / two-finger trackpad
   useEffect(() => {
-    const el = containerRef.current
+    const el = trackRef.current
     if (!el) return
     let lastFired = 0
-    const handleWheel = (e) => {
+    const onWheel = (e) => {
       if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return
       e.preventDefault()
       const now = Date.now()
@@ -411,26 +421,47 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
       if (e.deltaX > 20) { setCurrent((c) => Math.min(total - 1, c + 1)); lastFired = now }
       if (e.deltaX < -20) { setCurrent((c) => Math.max(0, c - 1)); lastFired = now }
     }
-    el.addEventListener('wheel', handleWheel, { passive: false })
-    return () => el.removeEventListener('wheel', handleWheel)
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
   }, [total])
 
-  // Touch swipe
-  const [touchStart, setTouchStart] = useState(null)
-  const handleTouchStart = (e) => setTouchStart(e.touches[0].clientX)
-  const handleTouchEnd = (e) => {
-    if (touchStart === null) return
-    const diff = touchStart - e.changedTouches[0].clientX
-    if (diff > 50) setCurrent((c) => Math.min(total - 1, c + 1))
-    if (diff < -50) setCurrent((c) => Math.max(0, c - 1))
-    setTouchStart(null)
-  }
+  // Touch swipe — lock axis to prevent page scroll during horizontal swipes
+  useEffect(() => {
+    const el = trackRef.current
+    if (!el) return
+    let startX = null, startY = null, axis = null
 
-  const phones = effectiveSlides[current]
+    const onTouchStart = (e) => {
+      startX = e.touches[0].clientX
+      startY = e.touches[0].clientY
+      axis = null
+    }
+    const onTouchMove = (e) => {
+      if (startX === null) return
+      const dx = Math.abs(e.touches[0].clientX - startX)
+      const dy = Math.abs(e.touches[0].clientY - startY)
+      if (axis === null && (dx > 8 || dy > 8)) axis = dx > dy ? 'h' : 'v'
+      if (axis === 'h') e.preventDefault()
+    }
+    const onTouchEnd = (e) => {
+      if (axis !== 'h') { startX = null; return }
+      const diff = startX - e.changedTouches[0].clientX
+      if (diff > 50) setCurrent((c) => Math.min(total - 1, c + 1))
+      if (diff < -50) setCurrent((c) => Math.max(0, c - 1))
+      startX = null; axis = null
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [total])
+
   const maxPerSlide = columns ?? Math.max(...effectiveSlides.map((s) => s.length))
-  const imgWidth = maxPerSlide === 1 ? '50%' : maxPerSlide === 2 ? '44%' : '30%'
-
-  // Flatten all images for lightbox (preserve order across slides)
   const allImages = effectiveSlides.flat()
 
   const ArrowBtn = ({ dir }) => {
@@ -440,7 +471,7 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
         onClick={() => setCurrent((c) => dir === 'left' ? Math.max(0, c - 1) : Math.min(total - 1, c + 1))}
         style={{
           position: 'absolute',
-          [dir === 'left' ? 'left' : 'right']: '-20px',
+          [dir === 'left' ? 'left' : 'right']: isMobile ? '8px' : '-18px',
           top: '50%',
           transform: 'translateY(-50%)',
           zIndex: 10,
@@ -448,64 +479,90 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
           height: '34px',
           borderRadius: '50%',
           border: 'none',
-          background: 'rgba(0,0,0,0.12)',
+          background: isMobile ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.12)',
           cursor: atEdge ? 'default' : 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          opacity: atEdge ? 0.3 : 0.8,
+          opacity: atEdge ? 0.25 : 0.85,
           transition: 'opacity 0.2s ease',
         }}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          {dir === 'left'
-            ? <path d="M15 18l-6-6 6-6" />
-            : <path d="M9 18l6-6-6-6" />}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isMobile ? '#fff' : '#222'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          {dir === 'left' ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
         </svg>
       </button>
     )
   }
 
   return (
-    <div style={{ width: '100%', userSelect: 'none' }}>
-      <div
-        ref={containerRef}
-        style={{ position: 'relative', cursor: 'ew-resize' }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {total > 1 && <ArrowBtn dir="left" />}
-        {total > 1 && <ArrowBtn dir="right" />}
+    <div ref={outerRef} style={{ width: '100%', userSelect: 'none', position: 'relative' }}>
+      {total > 1 && <ArrowBtn dir="left" />}
+      {total > 1 && <ArrowBtn dir="right" />}
 
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '12px' }}>
-          {phones.map((phone, j) => {
-            const globalIndex = effectiveSlides.slice(0, current).flat().length + j
-            return phone.src ? (
-              <HoverImage
-                key={j}
-                src={phone.src}
-                alt={phone.alt}
-                style={{ width: imgWidth, height: 'auto', display: 'block' }}
-                onClick={() => onImageClick && onImageClick(allImages, globalIndex)}
-              />
-            ) : (
+      {/* Clipping track */}
+      <div
+        ref={trackRef}
+        style={{ overflow: 'hidden', cursor: total > 1 ? 'ew-resize' : 'default', borderRadius: '4px' }}
+      >
+        {/* Animated strip */}
+        <div
+          style={{
+            display: 'flex',
+            transform: `translateX(-${current * 100}%)`,
+            transition: 'transform 0.32s cubic-bezier(0.4, 0, 0.2, 1)',
+            willChange: 'transform',
+          }}
+        >
+          {effectiveSlides.map((slide, i) => {
+            // Size images based on actual count in this slide (ignore columns on mobile)
+            const count = isMobile ? slide.length : maxPerSlide
+            const imgWidth = count === 1 ? '60%' : count === 2 ? '44%' : '30%'
+            return (
               <div
-                key={j}
+                key={i}
                 style={{
-                  width: imgWidth,
-                  aspectRatio: '9 / 19.5',
-                  borderRadius: '8px',
-                  background: '#ddd',
+                  minWidth: '100%',
                   display: 'flex',
-                  alignItems: 'center',
+                  alignItems: 'flex-end',
                   justifyContent: 'center',
-                  color: '#bbb',
-                  fontSize: '10px',
-                  textAlign: 'center',
-                  padding: '8px',
+                  gap: '12px',
+                  // On mobile pad inward so arrows don't overlap images
+                  padding: isMobile ? '0 52px' : '0',
+                  boxSizing: 'border-box',
                 }}
               >
-                {phone.alt}
+                {slide.map((phone, j) => {
+                  const globalIndex = effectiveSlides.slice(0, i).flat().length + j
+                  return phone.src ? (
+                    <HoverImage
+                      key={j}
+                      src={phone.src}
+                      alt={phone.alt}
+                      style={{ width: imgWidth, height: 'auto', display: 'block' }}
+                      onClick={() => onImageClick && onImageClick(allImages, globalIndex)}
+                    />
+                  ) : (
+                    <div
+                      key={j}
+                      style={{
+                        width: imgWidth,
+                        aspectRatio: '9 / 19.5',
+                        borderRadius: '8px',
+                        background: '#ddd',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#bbb',
+                        fontSize: '10px',
+                        textAlign: 'center',
+                        padding: '8px',
+                      }}
+                    >
+                      {phone.alt}
+                    </div>
+                  )
+                })}
               </div>
             )
           })}
@@ -592,8 +649,10 @@ export default function CaseStudyRidehail() {
   const openLightbox = (images, index) => setLightbox({ images, index })
   const closeLightbox = () => setLightbox(null)
 
+  useEffect(() => { window.scrollTo(0, 0) }, [])
+
   return (
-    <div style={{ background: '#ededed', minHeight: '100vh', fontFamily: 'Inter, -apple-system, sans-serif' }}>
+    <div style={{ background: '#ededed', minHeight: '100vh' }}>
       <CaseStudyNav isMobile={isMobile} />
 
       {/* ── 1. Overview ── */}
@@ -645,7 +704,7 @@ export default function CaseStudyRidehail() {
         bg="#ffffff"
         left={
           <>
-            <SectionTitle title="Expectation Setting" subtitle="Two audiences" {...bp} />
+            <SectionTitle title="Expectation setting" subtitle="Two audiences" {...bp} />
 
             <Label>Background</Label>
             <BodyText>Before jumping in, I needed to know how each audience defined success.</BodyText>
@@ -702,7 +761,7 @@ export default function CaseStudyRidehail() {
               experience needed to adapt to how different audiences actually used the product.
             </BodyText>
 
-            <Label>Use Cases</Label>
+            <Label>Use cases</Label>
             <NumberedItem n={1}>
               <span><strong>Investors</strong> evaluated product viability during guided site visits, using the app to trial the service.</span>
             </NumberedItem>
@@ -710,7 +769,7 @@ export default function CaseStudyRidehail() {
               <span><strong>Engineers</strong> validated operational coverage and confirmed accuracy within the supported ODD during testing.</span>
             </NumberedItem>
 
-            <Label>Design Response</Label>
+            <Label>Design response</Label>
             <NumberedItem n={1}>
               <span><strong>For investors</strong>, the experience emphasized a realistic, confidence-building ride flow that surfaced constraints only when relevant.</span>
             </NumberedItem>
@@ -821,7 +880,7 @@ export default function CaseStudyRidehail() {
               and engineers validating the system.
             </p>
 
-            <Label>Design Response</Label>
+            <Label>Design response</Label>
             <BodyText>
               The interface selectively returned control to riders at key decision points,
               creating a more reciprocal interaction between rider and service.
@@ -942,6 +1001,7 @@ export default function CaseStudyRidehail() {
       >
         <Link
           to="/"
+          onClick={() => window.scrollTo(0, 0)}
           style={{
             fontSize: '14px',
             fontWeight: 500,

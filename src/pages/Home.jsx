@@ -289,11 +289,11 @@ function ProjectCard({ project, isMobile, isTablet }) {
         flexDirection: isMobile ? 'column' : 'row',
         borderRadius: '16px',
         overflow: 'hidden',
-        marginBottom: '10px',
         height: isMobile ? 'auto' : isTablet ? '420px' : '500px',
         textDecoration: 'none',
         cursor: 'pointer',
         background: project.color,
+        marginBottom: '24px',
         transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
         boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.09)' : '0 2px 8px rgba(0,0,0,0.04)',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -635,6 +635,7 @@ export default function Home() {
           padding: isMobile ? '90px 20px 72px' : isTablet ? '100px 32px 80px' : '150px 40px 100px',
           display: 'flex',
           flexDirection: isMobile ? 'column' : 'row',
+          alignItems: 'flex-start',
           gap: isMobile ? '24px' : isTablet ? '40px' : '60px',
           maxWidth: '1400px',
           margin: '0 auto',
@@ -660,15 +661,14 @@ export default function Home() {
         <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start' }}>
           <h2
             style={{
-              fontSize: isMobile ? '34px' : isTablet ? '36px' : '44px',
-              fontWeight: 800,
+              fontSize: isMobile ? '22px' : isTablet ? '36px' : '44px',
+              fontWeight: isMobile ? 600 : 700,
               color: '#fff',
               lineHeight: 1.28,
               maxWidth: '840px',
             }}
           >
-            Currently sole Product Designer at May Mobility, shaping rider, fleet, and safety
-            experiences that supported over $100M in funding in 2025.
+            Sole Product Designer at May Mobility, shaping autonomous vehicle rider, fleet, and safety experiences that supported over $100M in funding in 2025.
           </h2>
         </div>
       </section>
