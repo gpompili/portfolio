@@ -500,10 +500,10 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
       {total > 1 && <ArrowBtn dir="left" />}
       {total > 1 && <ArrowBtn dir="right" />}
 
-      {/* Clipping track */}
+      {/* Clipping track — clip-path avoids the WebKit overflow+border-radius dark corner artifact */}
       <div
         ref={trackRef}
-        style={{ overflow: 'hidden', cursor: total > 1 ? 'ew-resize' : 'default', borderRadius: '4px' }}
+        style={{ clipPath: 'inset(0)', cursor: total > 1 ? 'ew-resize' : 'default' }}
       >
         {/* Animated strip */}
         <div
