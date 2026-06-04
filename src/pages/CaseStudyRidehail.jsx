@@ -273,7 +273,7 @@ function Lightbox({ images, startIndex, onClose }) {
     const atEdge = dir === 'left' ? current === 0 : current === total - 1
     return (
       <button
-        onClick={() => setCurrent((c) => dir === 'left' ? Math.max(0, c - 1) : Math.min(total - 1, c + 1))}
+        onClick={() => goTo(dir === 'left' ? current - 1 : current + 1)}
         style={{
           width: '44px',
           height: '44px',
@@ -400,17 +400,24 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
 
   const total = effectiveSlides.length
   const [current, setCurrent] = useState(0)
-  const outerRef = useRef(null)  // arrow anchor (not clipped)
-  const trackRef = useRef(null)  // overflow hidden clip + wheel/touch target
+  const [visible, setVisible] = useState(true)
+  const containerRef = useRef(null)
 
   // Clamp on slide count change
   useEffect(() => {
     setCurrent((c) => Math.min(c, total - 1))
   }, [total])
 
+  const goTo = (next) => {
+    const clamped = Math.max(0, Math.min(total - 1, next))
+    if (clamped === current) return
+    setVisible(false)
+    setTimeout(() => { setCurrent(clamped); setVisible(true) }, 180)
+  }
+
   // Horizontal wheel / two-finger trackpad
   useEffect(() => {
-    const el = trackRef.current
+    const el = containerRef.current
     if (!el) return
     let lastFired = 0
     const onWheel = (e) => {
@@ -418,16 +425,16 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
       e.preventDefault()
       const now = Date.now()
       if (now - lastFired < 450) return
-      if (e.deltaX > 20) { setCurrent((c) => Math.min(total - 1, c + 1)); lastFired = now }
-      if (e.deltaX < -20) { setCurrent((c) => Math.max(0, c - 1)); lastFired = now }
+      if (e.deltaX > 20) { goTo(current + 1); lastFired = now }
+      if (e.deltaX < -20) { goTo(current - 1); lastFired = now }
     }
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
-  }, [total])
+  }, [total, current])
 
   // Touch swipe — lock axis to prevent page scroll during horizontal swipes
   useEffect(() => {
-    const el = trackRef.current
+    const el = containerRef.current
     if (!el) return
     let startX = null, startY = null, axis = null
 
@@ -446,8 +453,8 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
     const onTouchEnd = (e) => {
       if (axis !== 'h') { startX = null; return }
       const diff = startX - e.changedTouches[0].clientX
-      if (diff > 50) setCurrent((c) => Math.min(total - 1, c + 1))
-      if (diff < -50) setCurrent((c) => Math.max(0, c - 1))
+      if (diff > 50) goTo(current + 1)
+      if (diff < -50) goTo(current - 1)
       startX = null; axis = null
     }
 
@@ -459,7 +466,7 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
       el.removeEventListener('touchmove', onTouchMove)
       el.removeEventListener('touchend', onTouchEnd)
     }
-  }, [total])
+  }, [total, current])
 
   const maxPerSlide = columns ?? Math.max(...effectiveSlides.map((s) => s.length))
   const allImages = effectiveSlides.flat()
@@ -495,74 +502,60 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
     )
   }
 
-  return (
-    <div ref={outerRef} style={{ width: '100%', userSelect: 'none', position: 'relative' }}>
-      {total > 1 && <ArrowBtn dir="left" />}
-      {total > 1 && <ArrowBtn dir="right" />}
+  const slide = effectiveSlides[current]
+  const count = isMobile ? slide.length : maxPerSlide
+  const imgWidth = count === 1 ? '60%' : count === 2 ? '44%' : '30%'
 
-      {/* Clipping track — clip-path avoids the WebKit overflow+border-radius dark corner artifact */}
+  return (
+    <div style={{ width: '100%', userSelect: 'none' }}>
+      {/* No overflow/clip-path — avoids WebKit dark corner artifact on border-radius'd images */}
       <div
-        ref={trackRef}
-        style={{ clipPath: 'inset(0)', cursor: total > 1 ? 'ew-resize' : 'default' }}
+        ref={containerRef}
+        style={{ position: 'relative', cursor: total > 1 ? 'ew-resize' : 'default' }}
       >
-        {/* Animated strip */}
+        {total > 1 && <ArrowBtn dir="left" />}
+        {total > 1 && <ArrowBtn dir="right" />}
+
+        {/* Crossfade between slides — no clipping needed */}
         <div
           style={{
             display: 'flex',
-            transform: `translateX(-${current * 100}%)`,
-            transition: 'transform 0.32s cubic-bezier(0.4, 0, 0.2, 1)',
-            willChange: 'transform',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            gap: '12px',
+            padding: isMobile ? '0 52px' : '0',
+            opacity: visible ? 1 : 0,
+            transition: 'opacity 0.18s ease',
           }}
         >
-          {effectiveSlides.map((slide, i) => {
-            // Size images based on actual count in this slide (ignore columns on mobile)
-            const count = isMobile ? slide.length : maxPerSlide
-            const imgWidth = count === 1 ? '60%' : count === 2 ? '44%' : '30%'
-            return (
+          {slide.map((phone, j) => {
+            const globalIndex = effectiveSlides.slice(0, current).flat().length + j
+            return phone.src ? (
+              <HoverImage
+                key={phone.src}
+                src={phone.src}
+                alt={phone.alt}
+                style={{ width: imgWidth, height: 'auto', display: 'block' }}
+                onClick={() => onImageClick && onImageClick(allImages, globalIndex)}
+              />
+            ) : (
               <div
-                key={i}
+                key={j}
                 style={{
-                  minWidth: '100%',
+                  width: imgWidth,
+                  aspectRatio: '9 / 19.5',
+                  borderRadius: '8px',
+                  background: '#ddd',
                   display: 'flex',
-                  alignItems: 'flex-end',
+                  alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '12px',
-                  // On mobile pad inward so arrows don't overlap images
-                  padding: isMobile ? '0 52px' : '0',
-                  boxSizing: 'border-box',
+                  color: '#bbb',
+                  fontSize: '10px',
+                  textAlign: 'center',
+                  padding: '8px',
                 }}
               >
-                {slide.map((phone, j) => {
-                  const globalIndex = effectiveSlides.slice(0, i).flat().length + j
-                  return phone.src ? (
-                    <HoverImage
-                      key={j}
-                      src={phone.src}
-                      alt={phone.alt}
-                      style={{ width: imgWidth, height: 'auto', display: 'block' }}
-                      onClick={() => onImageClick && onImageClick(allImages, globalIndex)}
-                    />
-                  ) : (
-                    <div
-                      key={j}
-                      style={{
-                        width: imgWidth,
-                        aspectRatio: '9 / 19.5',
-                        borderRadius: '8px',
-                        background: '#ddd',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#bbb',
-                        fontSize: '10px',
-                        textAlign: 'center',
-                        padding: '8px',
-                      }}
-                    >
-                      {phone.alt}
-                    </div>
-                  )
-                })}
+                {phone.alt}
               </div>
             )
           })}
@@ -574,7 +567,7 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
         {effectiveSlides.map((_, i) => (
           <button
             key={i}
-            onClick={() => setCurrent(i)}
+            onClick={() => goTo(i)}
             style={{
               width: '7px',
               height: '7px',

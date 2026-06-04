@@ -462,7 +462,7 @@ function ContactLinkRow({ label, href, icon }) {
   return (
     <a
       href={href}
-      target={href.startsWith('http') ? '_blank' : undefined}
+      target={href.startsWith('http') || href.endsWith('.pdf') ? '_blank' : undefined}
       rel="noopener noreferrer"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
