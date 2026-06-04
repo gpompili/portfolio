@@ -207,6 +207,7 @@ function HoverImage({ src, alt, style, onClick, noShadow }) {
         flexShrink,
         borderRadius: '27px',
         overflow: 'hidden',
+        backgroundColor: '#fff',
         boxShadow: hovered
           ? '0 12px 40px rgba(0,0,0,0.22)'
           : '0 4px 18px rgba(0,0,0,0.14)',
@@ -216,7 +217,7 @@ function HoverImage({ src, alt, style, onClick, noShadow }) {
         ...restStyle,
       }}
     >
-      <img src={src} alt={alt} style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }} />
+      <img src={src} alt={alt} style={{ width: '100%', display: 'block' }} />
     </div>
   )
 }
