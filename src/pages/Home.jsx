@@ -622,11 +622,11 @@ function GridFooter() {
       drawGrid()
       ctx.globalAlpha = 1
 
-      const r = Math.max(w, h) * 0.72
+      const r = Math.max(w, h) * 0.35
       const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, r)
-      grad.addColorStop(0,    'rgba(13,13,13,0.7)')
-      grad.addColorStop(0.10, 'rgba(13,13,13,0.7)')
-      grad.addColorStop(0.38, 'rgba(13,13,13,0.93)')
+      grad.addColorStop(0,    'rgba(13,13,13,0.15)')
+      grad.addColorStop(0.18, 'rgba(13,13,13,0.15)')
+      grad.addColorStop(0.55, 'rgba(13,13,13,0.91)')
       grad.addColorStop(1,    'rgba(13,13,13,0.99)')
       ctx.fillStyle = grad
       ctx.fillRect(0, 0, w, h)
