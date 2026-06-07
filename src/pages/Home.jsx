@@ -637,13 +637,13 @@ export default function Home() {
           display: 'flex',
           flexDirection: isMobile ? 'column' : 'row',
           alignItems: 'flex-start',
-          gap: isMobile ? '24px' : isTablet ? '40px' : '48px',
+          gap: isMobile ? '24px' : isTablet ? '40px' : '60px',
           maxWidth: '1400px',
           margin: '0 auto',
         }}
       >
         {!(isMobile || isTablet) && (
-          <div style={{ width: '210px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+          <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
             <h1
               style={{
                 fontSize: '44px',
@@ -663,10 +663,9 @@ export default function Home() {
           <h2
             style={{
               fontSize: isMobile ? '22px' : isTablet ? '36px' : '44px',
-              fontWeight: isMobile ? 600 : 600,
+              fontWeight: isMobile ? 600 : 800,
               color: '#fff',
               lineHeight: 1.28,
-              maxWidth: '840px',
             }}
           >
             Sole Product Designer at May Mobility, shaping autonomous vehicle rider, fleet, and safety experiences that supported over $100M in funding in 2025.
