@@ -1,90 +1,54 @@
 import { useEffect, useRef } from 'react'
 
-// bg: must exactly match the CSS background of the section directly above
-// mode: 'dark' | 'light' — controls grid line color and overlay color
 export default function GridFooter({ bg = '#0d0d0d', mode = 'dark' }) {
-  const canvasRef = useRef(null)
+  const divRef = useRef(null)
+
+  const r = parseInt(bg.slice(1, 3), 16)
+  const g = parseInt(bg.slice(3, 5), 16)
+  const b = parseInt(bg.slice(5, 7), 16)
+
+  const lineColor = mode === 'dark'
+    ? 'rgba(255,255,255,0.10)'
+    : 'rgba(0,0,0,0.08)'
+
+  const o15 = `rgba(${r},${g},${b},0.15)`
+  const o91 = `rgba(${r},${g},${b},0.91)`
+  const o99 = `rgba(${r},${g},${b},0.99)`
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
+    const el = divRef.current
+    if (!el) return
     let raf
-
-    const dpr = window.devicePixelRatio || 1
-    const resize = () => {
-      const { width, height } = canvas.getBoundingClientRect()
-      canvas.width = width * dpr
-      canvas.height = height * dpr
-      ctx.scale(dpr, dpr)
-    }
-    resize()
-    window.addEventListener('resize', resize)
-
-    const W = () => canvas.width / dpr
-    const H = () => canvas.height / dpr
-
-    // Parse bg hex → rgb for overlay gradient
-    const r = parseInt(bg.slice(1, 3), 16)
-    const g = parseInt(bg.slice(3, 5), 16)
-    const b = parseInt(bg.slice(5, 7), 16)
-
-    const gridColor = mode === 'dark' ? 'rgba(255,255,255,1)' : 'rgba(0,0,0,1)'
-
-    const drawGrid = () => {
-      const size = 24
-      const w = W(), h = H()
-      ctx.strokeStyle = gridColor
-      ctx.lineWidth = 0.5
-      for (let x = 0; x <= w; x += size) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke()
-      }
-      for (let y = 0; y <= h; y += size) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke()
-      }
-    }
-
     let t = 0
+
     const animate = () => {
       t += 0.00022
-      const w = W(), h = H()
-      const sx = w * (0.5 + 0.38 * Math.sin(t * 1.1))
-      const sy = h * (0.5 + 0.32 * Math.sin(t * 0.73 + 2.1))
-
-      // Clear to fully transparent — the parent div's CSS background shows through
-      ctx.clearRect(0, 0, w, h)
-
-      // Draw grid at low opacity
-      ctx.globalAlpha = 0.10
-      drawGrid()
-      ctx.globalAlpha = 1
-
-      // Overlay: same color as bg, mostly opaque everywhere except the spotlight
-      const radius = Math.max(w, h) * 0.35
-      const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, radius)
-      grad.addColorStop(0,    `rgba(${r},${g},${b},0.15)`)
-      grad.addColorStop(0.18, `rgba(${r},${g},${b},0.15)`)
-      grad.addColorStop(0.55, `rgba(${r},${g},${b},0.91)`)
-      grad.addColorStop(1,    `rgba(${r},${g},${b},0.99)`)
-      ctx.fillStyle = grad
-      ctx.fillRect(0, 0, w, h)
-
+      const sx = (0.5 + 0.38 * Math.sin(t * 1.1)) * 100
+      const sy = (0.5 + 0.32 * Math.sin(t * 0.73 + 2.1)) * 100
+      const radius = Math.round(Math.max(el.offsetWidth, el.offsetHeight) * 0.35)
+      el.style.setProperty('--sx', `${sx.toFixed(2)}%`)
+      el.style.setProperty('--sy', `${sy.toFixed(2)}%`)
+      el.style.setProperty('--r', `${radius}px`)
       raf = requestAnimationFrame(animate)
     }
 
     animate()
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('resize', resize)
-    }
-  }, [bg, mode])
+    return () => cancelAnimationFrame(raf)
+  }, [])
 
   return (
-    <div style={{ background: bg, lineHeight: 0 }}>
-      <canvas
-        ref={canvasRef}
-        style={{ display: 'block', width: '100%', height: '320px' }}
-      />
-    </div>
+    <div
+      ref={divRef}
+      style={{
+        height: '320px',
+        backgroundColor: bg,
+        backgroundImage: [
+          `radial-gradient(circle var(--r, 300px) at var(--sx, 50%) var(--sy, 50%), ${o15} 0%, ${o15} 18%, ${o91} 55%, ${o99} 100%)`,
+          `linear-gradient(${lineColor} 1px, transparent 1px)`,
+          `linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`,
+        ].join(', '),
+        backgroundSize: '100% 100%, 24px 24px, 24px 24px',
+      }}
+    />
   )
 }
