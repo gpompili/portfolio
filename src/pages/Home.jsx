@@ -665,7 +665,7 @@ export default function Home() {
               fontSize: isMobile ? '22px' : isTablet ? '36px' : '44px',
               fontWeight: isMobile ? 600 : 800,
               color: '#fff',
-              lineHeight: 1.28,
+              lineHeight: 1.15,
             }}
           >
             Sole Product Designer at May Mobility, shaping autonomous vehicle rider, fleet, and safety experiences that supported over $100M in funding in 2025.
