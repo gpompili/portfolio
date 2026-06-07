@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useBreakpoint } from '../hooks/useBreakpoint'
+import GridFooter from '../components/GridFooter'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -981,6 +982,9 @@ export default function CaseStudyRidehail() {
           </div>
         )}
       </div>
+
+      {/* ── Grid Footer ── */}
+      <GridFooter mode="light" />
 
       {/* ── Footer ── */}
       <div
