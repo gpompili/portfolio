@@ -983,44 +983,63 @@ export default function CaseStudyRidehail() {
         )}
       </div>
 
-      {/* ── Footer ── */}
-      <div
-        style={{
-          background: '#ededed',
-          padding: isMobile ? '32px 20px' : '40px 60px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
+      {/* ── Next case study footer ── */}
+      <GridFooter bg="#ffffff" mode="light">
+        <div style={{
+          fontSize: '10px',
+          fontWeight: 700,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: '#aaa',
+          marginBottom: '16px',
+        }}>
+          Next case study
+        </div>
         <Link
-          to="/"
+          to="/work/incar"
           onClick={() => window.scrollTo(0, 0)}
-          style={{
-            fontSize: '14px',
-            fontWeight: 500,
-            color: '#888',
-            textDecoration: 'none',
+          style={{ textDecoration: 'none' }}
+        >
+          <div style={{
+            fontSize: isMobile ? '40px' : '72px',
+            fontWeight: 800,
+            color: TEXT_DARK,
+            lineHeight: 1.05,
+            textAlign: 'center',
+            marginBottom: '32px',
+            transition: 'opacity 0.2s ease',
+          }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.6'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          >
+            The Interior Problem
+          </div>
+        </Link>
+        <Link
+          to="/work/incar"
+          onClick={() => window.scrollTo(0, 0)}
+          style={{ textDecoration: 'none' }}
+        >
+          <div style={{
+            width: '52px',
+            height: '52px',
+            borderRadius: '50%',
+            border: '1.5px solid #ccc',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            justifyContent: 'center',
+            color: '#888',
+            transition: 'border-color 0.2s ease, color 0.2s ease',
           }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 5l-7 7 7 7" />
-          </svg>
-          Back to work
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#999'; e.currentTarget.style.color = '#444' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#ccc'; e.currentTarget.style.color = '#888' }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </div>
         </Link>
-        <a
-          href="mailto:gabepompilius@gmail.com"
-          style={{ fontSize: '14px', fontWeight: 500, color: '#888', textDecoration: 'none' }}
-        >
-          {isMobile ? 'Email' : 'gabepompilius@gmail.com'}
-        </a>
-      </div>
-
-      {/* ── Grid Footer ── extends the #ededed footer nav above it seamlessly */}
-      <GridFooter bg="#ededed" mode="light" />
+      </GridFooter>
 
       {/* ── Lightbox ── */}
       {lightbox && (

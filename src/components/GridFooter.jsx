@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 // bg: the footer's own distinct background color
 // mode: 'dark' | 'light'
-export default function GridFooter({ bg = '#111111', mode = 'dark' }) {
+export default function GridFooter({ bg = '#111111', mode = 'dark', children }) {
   const gridRevealRef = useRef(null)
 
   const r = parseInt(bg.slice(1, 3), 16)
@@ -92,6 +92,21 @@ export default function GridFooter({ bg = '#111111', mode = 'dark' }) {
           WebkitMaskComposite: 'source-over',
         }}
       />
+
+      {/* Content overlaid on animation */}
+      {children && (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10,
+        }}>
+          {children}
+        </div>
+      )}
     </div>
   )
 }
