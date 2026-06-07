@@ -1,12 +1,9 @@
 import { useEffect, useRef } from 'react'
 
-// bg: the background color of the section above — footer blends into it seamlessly
-// mode: 'dark' | 'light' — controls grid line color
+// bg: must exactly match the CSS background of the section directly above
+// mode: 'dark' | 'light' — controls grid line color and overlay color
 export default function GridFooter({ bg = '#0d0d0d', mode = 'dark' }) {
   const canvasRef = useRef(null)
-
-  const gridColor = mode === 'dark' ? 'rgba(255,255,255,1)' : 'rgba(0,0,0,1)'
-  const [or, og, ob] = mode === 'dark' ? [13, 13, 13] : [237, 237, 237]
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -26,6 +23,13 @@ export default function GridFooter({ bg = '#0d0d0d', mode = 'dark' }) {
 
     const W = () => canvas.width / dpr
     const H = () => canvas.height / dpr
+
+    // Parse bg hex → rgb for overlay gradient
+    const r = parseInt(bg.slice(1, 3), 16)
+    const g = parseInt(bg.slice(3, 5), 16)
+    const b = parseInt(bg.slice(5, 7), 16)
+
+    const gridColor = mode === 'dark' ? 'rgba(255,255,255,1)' : 'rgba(0,0,0,1)'
 
     const drawGrid = () => {
       const size = 24
@@ -47,22 +51,21 @@ export default function GridFooter({ bg = '#0d0d0d', mode = 'dark' }) {
       const sx = w * (0.5 + 0.38 * Math.sin(t * 1.1))
       const sy = h * (0.5 + 0.32 * Math.sin(t * 0.73 + 2.1))
 
+      // Clear to fully transparent — the parent div's CSS background shows through
       ctx.clearRect(0, 0, w, h)
 
-      // Fill with exact bg color — no CSS background, canvas owns it entirely
-      ctx.fillStyle = bg
-      ctx.fillRect(0, 0, w, h)
-
+      // Draw grid at low opacity
       ctx.globalAlpha = 0.10
       drawGrid()
       ctx.globalAlpha = 1
 
-      const r = Math.max(w, h) * 0.35
-      const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, r)
-      grad.addColorStop(0,    `rgba(${or},${og},${ob},0.15)`)
-      grad.addColorStop(0.18, `rgba(${or},${og},${ob},0.15)`)
-      grad.addColorStop(0.55, `rgba(${or},${og},${ob},0.91)`)
-      grad.addColorStop(1,    `rgba(${or},${og},${ob},0.99)`)
+      // Overlay: same color as bg, mostly opaque everywhere except the spotlight
+      const radius = Math.max(w, h) * 0.35
+      const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, radius)
+      grad.addColorStop(0,    `rgba(${r},${g},${b},0.15)`)
+      grad.addColorStop(0.18, `rgba(${r},${g},${b},0.15)`)
+      grad.addColorStop(0.55, `rgba(${r},${g},${b},0.91)`)
+      grad.addColorStop(1,    `rgba(${r},${g},${b},0.99)`)
       ctx.fillStyle = grad
       ctx.fillRect(0, 0, w, h)
 
