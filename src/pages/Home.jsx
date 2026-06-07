@@ -633,17 +633,17 @@ export default function Home() {
       <section
         ref={heroRef}
         style={{
-          padding: isMobile ? '90px 20px 72px' : isTablet ? '100px 32px 80px' : '150px 40px 100px',
+          padding: isMobile ? '90px 20px 72px' : isTablet ? '100px 32px 80px' : '150px 32px 100px',
           display: 'flex',
           flexDirection: isMobile ? 'column' : 'row',
           alignItems: 'flex-start',
-          gap: isMobile ? '24px' : isTablet ? '40px' : '60px',
+          gap: isMobile ? '24px' : isTablet ? '40px' : '48px',
           maxWidth: '1400px',
           margin: '0 auto',
         }}
       >
         {!(isMobile || isTablet) && (
-          <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+          <div style={{ width: '210px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
             <h1
               style={{
                 fontSize: '44px',
@@ -663,7 +663,7 @@ export default function Home() {
           <h2
             style={{
               fontSize: isMobile ? '22px' : isTablet ? '36px' : '44px',
-              fontWeight: isMobile ? 600 : 700,
+              fontWeight: isMobile ? 600 : 600,
               color: '#fff',
               lineHeight: 1.28,
               maxWidth: '840px',
@@ -699,7 +699,7 @@ export default function Home() {
       </div>
 
       {/* ── Grid Footer ── */}
-      <GridFooter bg="#0d0d0d" mode="dark" />
+      <GridFooter bg="#111111" mode="dark" />
     </div>
   )
 }
