@@ -1,13 +1,12 @@
 import { useEffect, useRef } from 'react'
 
-// mode: 'dark' (home) — white grid on #0d0d0d
-//       'light' (case study) — dark grid on #ededed
-export default function GridFooter({ mode = 'dark' }) {
+// bg: the background color of the section above — footer blends into it seamlessly
+// mode: 'dark' | 'light' — controls grid line color
+export default function GridFooter({ bg = '#0d0d0d', mode = 'dark' }) {
   const canvasRef = useRef(null)
 
-  const bg     = mode === 'dark' ? '#0d0d0d'                  : '#ededed'
-  const grid   = mode === 'dark' ? 'rgba(255,255,255,1)'      : 'rgba(0,0,0,1)'
-  const [or, og, ob] = mode === 'dark' ? [13, 13, 13]        : [237, 237, 237]
+  const gridColor = mode === 'dark' ? 'rgba(255,255,255,1)' : 'rgba(0,0,0,1)'
+  const [or, og, ob] = mode === 'dark' ? [13, 13, 13] : [237, 237, 237]
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -31,7 +30,7 @@ export default function GridFooter({ mode = 'dark' }) {
     const drawGrid = () => {
       const size = 24
       const w = W(), h = H()
-      ctx.strokeStyle = grid
+      ctx.strokeStyle = gridColor
       ctx.lineWidth = 0.5
       for (let x = 0; x <= w; x += size) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke()
@@ -49,6 +48,8 @@ export default function GridFooter({ mode = 'dark' }) {
       const sy = h * (0.5 + 0.32 * Math.sin(t * 0.73 + 2.1))
 
       ctx.clearRect(0, 0, w, h)
+
+      // Fill with exact bg color — no CSS background, canvas owns it entirely
       ctx.fillStyle = bg
       ctx.fillRect(0, 0, w, h)
 
@@ -73,12 +74,14 @@ export default function GridFooter({ mode = 'dark' }) {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', resize)
     }
-  }, [])
+  }, [bg, mode])
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{ display: 'block', width: '100%', height: '320px', background: bg }}
-    />
+    <div style={{ background: bg, lineHeight: 0 }}>
+      <canvas
+        ref={canvasRef}
+        style={{ display: 'block', width: '100%', height: '320px' }}
+      />
+    </div>
   )
 }

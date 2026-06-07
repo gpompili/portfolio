@@ -983,9 +983,6 @@ export default function CaseStudyRidehail() {
         )}
       </div>
 
-      {/* ── Grid Footer ── */}
-      <GridFooter mode="light" />
-
       {/* ── Footer ── */}
       <div
         style={{
@@ -1021,6 +1018,9 @@ export default function CaseStudyRidehail() {
           {isMobile ? 'Email' : 'gabepompilius@gmail.com'}
         </a>
       </div>
+
+      {/* ── Grid Footer ── extends the #ededed footer nav above it seamlessly */}
+      <GridFooter bg="#ededed" mode="light" />
 
       {/* ── Lightbox ── */}
       {lightbox && (

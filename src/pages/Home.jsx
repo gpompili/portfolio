@@ -699,7 +699,7 @@ export default function Home() {
       </div>
 
       {/* ── Grid Footer ── */}
-      <GridFooter />
+      <GridFooter bg="#0d0d0d" mode="dark" />
     </div>
   )
 }
