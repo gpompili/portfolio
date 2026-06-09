@@ -190,23 +190,23 @@ function ScreenCarousel({ images, isMobile, onImageClick }) {
 
   return (
     <div style={{ width: '100%', userSelect: 'none' }}>
-      {/* Outer div anchors the arrows; image sits inside */}
-      <div style={{ position: 'relative' }}>
+      {/* Padding creates space beside the image for arrows to sit in, like ridehail */}
+      <div style={{ position: 'relative', padding: total > 1 ? '0 42px' : '0' }}>
         {total > 1 && ['left', 'right'].map(dir => {
           const atEdge = dir === 'left' ? current === 0 : current === total - 1
           return (
             <button key={dir} onClick={() => goTo(dir === 'left' ? current - 1 : current + 1)}
               style={{
                 position: 'absolute',
-                [dir]: '12px',
+                [dir]: '4px',
                 top: '50%', transform: 'translateY(-50%)',
                 zIndex: 10, width: '34px', height: '34px', borderRadius: '50%', border: 'none',
-                background: 'rgba(0,0,0,0.22)',
+                background: 'rgba(0,0,0,0.10)',
                 cursor: atEdge ? 'default' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 opacity: atEdge ? 0.25 : 0.8, transition: 'opacity 0.2s',
               }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 {dir === 'left' ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
               </svg>
             </button>
