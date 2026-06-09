@@ -90,9 +90,62 @@ function SectionTitle({ title, subtitle, isMobile }) {
   )
 }
 
+// ─── Lightbox ─────────────────────────────────────────────────────────────────
+
+function Lightbox({ images, startIndex, onClose }) {
+  const [current, setCurrent] = useState(startIndex)
+  const total = images.length
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'ArrowLeft') setCurrent(c => Math.max(0, c - 1))
+      if (e.key === 'ArrowRight') setCurrent(c => Math.min(total - 1, c + 1))
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [total, onClose])
+
+  const [touchStart, setTouchStart] = useState(null)
+
+  return (
+    <div onClick={onClose} onTouchStart={e => setTouchStart(e.touches[0].clientX)}
+      onTouchEnd={e => {
+        if (touchStart === null) return
+        const diff = touchStart - e.changedTouches[0].clientX
+        if (diff > 50) setCurrent(c => Math.min(total - 1, c + 1))
+        if (diff < -50) setCurrent(c => Math.max(0, c - 1))
+        setTouchStart(null)
+      }}
+      style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(237,237,237,0.55)', backdropFilter: 'blur(22px)', WebkitBackdropFilter: 'blur(22px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+      <button onClick={onClose} style={{ position: 'fixed', top: '20px', right: '24px', background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: '16px', zIndex: 1001 }}>✕</button>
+      <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '90vw' }}>
+        {total > 1 && (
+          <button onClick={() => setCurrent(c => Math.max(0, c - 1))} style={{ width: '44px', height: '44px', borderRadius: '50%', border: 'none', background: current === 0 ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.18)', cursor: current === 0 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: current === 0 ? 0.35 : 1 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+        )}
+        <img src={images[current]} alt={`Screen ${current + 1}`} style={{ maxHeight: '80vh', maxWidth: '78vw', display: 'block', borderRadius: '12px', boxShadow: '0 32px 80px rgba(0,0,0,0.2)' }} />
+        {total > 1 && (
+          <button onClick={() => setCurrent(c => Math.min(total - 1, c + 1))} style={{ width: '44px', height: '44px', borderRadius: '50%', border: 'none', background: current === total - 1 ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.18)', cursor: current === total - 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: current === total - 1 ? 0.35 : 1 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+          </button>
+        )}
+      </div>
+      {total > 1 && (
+        <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '7px' }}>
+          {images.map((_, i) => (
+            <button key={i} onClick={() => setCurrent(i)} style={{ width: '7px', height: '7px', borderRadius: '50%', background: i === current ? '#333' : '#bbb', border: 'none', padding: 0, cursor: 'pointer', transition: 'background 0.2s' }} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Landscape image carousel (for dashboard/tablet screens) ─────────────────
 
-function ScreenCarousel({ images, isMobile }) {
+function ScreenCarousel({ images, isMobile, onImageClick }) {
   const [current, setCurrent] = useState(0)
   const [visible, setVisible] = useState(true)
   const containerRef = useRef(null)
@@ -137,28 +190,42 @@ function ScreenCarousel({ images, isMobile }) {
 
   return (
     <div style={{ width: '100%', userSelect: 'none' }}>
-      <div ref={containerRef} style={{ position: 'relative' }}>
+      {/* Outer div anchors the arrows; image sits inside */}
+      <div style={{ position: 'relative' }}>
         {total > 1 && ['left', 'right'].map(dir => {
           const atEdge = dir === 'left' ? current === 0 : current === total - 1
           return (
             <button key={dir} onClick={() => goTo(dir === 'left' ? current - 1 : current + 1)}
-              style={{ position: 'absolute', [dir]: isMobile ? '8px' : '-18px', top: '50%', transform: 'translateY(-50%)', zIndex: 10, width: '34px', height: '34px', borderRadius: '50%', border: 'none', background: isMobile ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.08)', cursor: atEdge ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: atEdge ? 0.25 : 0.8, transition: 'opacity 0.2s' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              style={{
+                position: 'absolute',
+                [dir]: '12px',
+                top: '50%', transform: 'translateY(-50%)',
+                zIndex: 10, width: '34px', height: '34px', borderRadius: '50%', border: 'none',
+                background: 'rgba(0,0,0,0.22)',
+                cursor: atEdge ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                opacity: atEdge ? 0.25 : 0.8, transition: 'opacity 0.2s',
+              }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 {dir === 'left' ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
               </svg>
             </button>
           )
         })}
-        <img
-          src={images[current]}
-          alt={`Screen ${current + 1}`}
-          style={{
-            width: '100%', display: 'block', borderRadius: '12px',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-            opacity: visible ? 1 : 0,
-            transition: 'opacity 0.18s ease',
-          }}
-        />
+        <div ref={containerRef}>
+          <img
+            src={images[current]}
+            alt={`Screen ${current + 1}`}
+            onClick={() => onImageClick && onImageClick(current)}
+            style={{
+              width: '100%', display: 'block', borderRadius: '12px',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+              opacity: visible ? 1 : 0,
+              transition: 'opacity 0.18s ease',
+              cursor: onImageClick ? 'zoom-in' : 'default',
+            }}
+          />
+        </div>
       </div>
       {total > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: '7px', marginTop: '16px' }}>
@@ -191,6 +258,10 @@ export default function CaseStudyFleet() {
   const bp = { isMobile, isTablet }
 
   useEffect(() => { window.scrollTo(0, 0) }, [])
+
+  const [lightbox, setLightbox] = useState(null)
+  const openLightbox = (images, index) => setLightbox({ images, index })
+  const closeLightbox = () => setLightbox(null)
 
   return (
     <div style={{ background: '#ededed', minHeight: '100vh' }}>
@@ -236,7 +307,7 @@ export default function CaseStudyFleet() {
             <BodyText>At May Mobility, the fleet monitoring product existed. But it had never received the design attention needed to support operators at true driverless scale. There was no PM. Feature development was reactive.</BodyText>
           </>
         }
-        right={<ScreenCarousel images={IMG.monitoring1} isMobile={isMobile} />}
+        right={<ScreenCarousel images={IMG.monitoring1} isMobile={isMobile} onImageClick={i => openLightbox(IMG.monitoring1, i)} />}
       />
 
       {/* ── 3. Steering without a wheel ── */}
@@ -253,7 +324,7 @@ export default function CaseStudyFleet() {
             <NumberedItem n={3}><span><strong>Steered prioritization</strong> — redirected feedback loops toward capabilities that would matter at fully-driverless scale, not just current demo workflows.</span></NumberedItem>
           </>
         }
-        right={<ScreenCarousel images={IMG.monitoring2} isMobile={isMobile} />}
+        right={<ScreenCarousel images={IMG.monitoring2} isMobile={isMobile} onImageClick={i => openLightbox(IMG.monitoring2, i)} />}
       />
 
       {/* ── 4. Dynamic task assignment ── */}
@@ -272,7 +343,7 @@ export default function CaseStudyFleet() {
             </p>
           </>
         }
-        right={<ScreenCarousel images={IMG.monitoring3} isMobile={isMobile} />}
+        right={<ScreenCarousel images={IMG.monitoring3} isMobile={isMobile} onImageClick={i => openLightbox(IMG.monitoring3, i)} />}
       />
 
       {/* ── 5. Outcome ── */}
@@ -302,6 +373,9 @@ export default function CaseStudyFleet() {
           </div>
         )}
       </div>
+
+      {/* ── Lightbox ── */}
+      {lightbox && <Lightbox images={lightbox.images} startIndex={lightbox.index} onClose={closeLightbox} />}
 
       {/* ── Grid Footer ── */}
       <GridFooter bg="#ffffff" mode="light">
