@@ -42,7 +42,10 @@ const projects = [
     id: 'fleet',
     title: 'Event-Driven Fleet Awareness',
     platform: 'Turning telemetry into operator actions',
-    description: '',
+    outcomes: [
+      'Converted data tables into real-time fleet signals, distributed across site staff for review',
+      'Designed a flexible UI that balanced competing needs across different user types',
+    ],
     color: '#242431',
     cover: '/assets/fleet/FleetCover.svg',
     href: '/work/fleet',

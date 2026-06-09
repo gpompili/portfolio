@@ -281,11 +281,12 @@ export default function CaseStudyFleet() {
             <Label style={{ marginTop: 0 }}>Objectives</Label>
             <NumberedItem n={1}>Give remote operators the awareness needed to monitor a fleet of autonomous vehicles simultaneously</NumberedItem>
             <NumberedItem n={2}>Surface time-sensitive events requiring human intervention without overwhelming operators with noise</NumberedItem>
+            <NumberedItem n={3}>Push for prioritizing fully-autonomous operational capabilities in the face of competing needs</NumberedItem>
             <Label>Outcome</Label>
-            <NumberedItem n={1} bold>Designed an event notification system that distributed real-time fleet awareness across site staff</NumberedItem>
-            <NumberedItem n={2} bold>Pushed prioritization toward fully-driverless operational capabilities</NumberedItem>
+            <NumberedItem n={1} bold>An event notification system that distributed real-time fleet signals across site staff</NumberedItem>
+            <NumberedItem n={2} bold>A flexible UI that balances many needs, informed by user types and the tasks most important to them</NumberedItem>
             <Label>My contribution</Label>
-            <BodyText>With no dedicated PM on the product, I embedded with operations, built a working relationship with the engineering manager, and drove product-level thinking on what the system needed to do — not just how it needed to look.</BodyText>
+            <BodyText>With no dedicated PM on the product, I embedded with operations, built a working relationship with the engineering manager, and drove product-level thinking on what the system needed to do to unlock fully-autonomous operational capabilities.</BodyText>
           </>
         }
         right={
