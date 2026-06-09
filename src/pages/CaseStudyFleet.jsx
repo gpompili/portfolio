@@ -393,9 +393,9 @@ export default function CaseStudyFleet() {
         </Link>
         <Link to="/work/remoteassist" onClick={() => window.scrollTo(0, 0)} style={{ textDecoration: 'none' }}>
           <div
-            style={{ width: '52px', height: '52px', borderRadius: '50%', border: '1.5px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', transition: 'border-color 0.2s, color 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#999'; e.currentTarget.style.color = '#444' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#ccc'; e.currentTarget.style.color = '#888' }}
+            style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', border: '1px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', transition: 'background 0.2s ease, color 0.2s ease' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.55)'; e.currentTarget.style.color = '#222' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.35)'; e.currentTarget.style.color = '#555' }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M12 5l7 7-7 7" />
