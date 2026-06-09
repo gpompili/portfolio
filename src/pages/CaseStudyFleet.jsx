@@ -378,7 +378,7 @@ export default function CaseStudyFleet() {
       {lightbox && <Lightbox images={lightbox.images} startIndex={lightbox.index} onClose={closeLightbox} />}
 
       {/* ── Grid Footer ── */}
-      <GridFooter bg="#ffffff" mode="light">
+      <GridFooter bg="#ededed" mode="light">
         <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#aaa', marginBottom: '16px' }}>
           Next case study
         </div>
