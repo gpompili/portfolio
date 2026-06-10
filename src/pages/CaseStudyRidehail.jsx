@@ -276,7 +276,7 @@ function Lightbox({ images, startIndex, onClose }) {
     const atEdge = dir === 'left' ? current === 0 : current === total - 1
     return (
       <button
-        onClick={() => goTo(dir === 'left' ? current - 1 : current + 1)}
+        onClick={() => setCurrent(c => dir === 'left' ? Math.max(0, c - 1) : Math.min(total - 1, c + 1))}
         style={{
           width: '44px',
           height: '44px',
