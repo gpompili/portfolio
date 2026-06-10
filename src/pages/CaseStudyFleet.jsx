@@ -97,11 +97,8 @@ function Lightbox({ images, startIndex, onClose, isMobile }) {
   const [current, setCurrent] = useState(startIndex)
   const total = images.length
 
-  // Lock body scroll while lightbox is open
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [])
+  // Prevent touchmove scroll bleed on iOS — no body overflow manipulation needed
+  // (body overflow:hidden clips position:fixed portals on Safari)
 
   useEffect(() => {
     const handler = (e) => {
