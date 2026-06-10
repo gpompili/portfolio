@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import GridFooter from '../components/GridFooter'
@@ -128,7 +129,7 @@ function Lightbox({ images, startIndex, onClose, isMobile }) {
     </button>
   )
 
-  return (
+  return createPortal(
     <div
       onClick={onClose}
       onTouchStart={e => setTouchStart(e.touches[0].clientX)}
@@ -139,9 +140,10 @@ function Lightbox({ images, startIndex, onClose, isMobile }) {
         if (diff < -50) setCurrent(c => Math.max(0, c - 1))
         setTouchStart(null)
       }}
+      onWheel={e => e.preventDefault()}
       style={{
         position: 'fixed', inset: 0, zIndex: 1000, overflow: 'hidden',
-        background: 'rgba(237,237,237,0.55)',
+        background: 'rgba(237,237,237,0.96)',
         backdropFilter: 'blur(22px)', WebkitBackdropFilter: 'blur(22px)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       }}>
@@ -181,7 +183,8 @@ function Lightbox({ images, startIndex, onClose, isMobile }) {
           )}
         </>
       )}
-    </div>
+    </div>,
+    document.body
   )
 }
 
