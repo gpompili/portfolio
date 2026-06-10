@@ -92,9 +92,15 @@ function SectionTitle({ title, subtitle, isMobile }) {
 
 // ─── Lightbox ─────────────────────────────────────────────────────────────────
 
-function Lightbox({ images, startIndex, onClose }) {
+function Lightbox({ images, startIndex, onClose, isMobile }) {
   const [current, setCurrent] = useState(startIndex)
   const total = images.length
+
+  // Lock body scroll while lightbox is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
 
   useEffect(() => {
     const handler = (e) => {
@@ -108,8 +114,24 @@ function Lightbox({ images, startIndex, onClose }) {
 
   const [touchStart, setTouchStart] = useState(null)
 
+  const arrowBtn = (dir, disabled) => (
+    <button
+      onClick={() => setCurrent(c => dir === 'left' ? Math.max(0, c - 1) : Math.min(total - 1, c + 1))}
+      style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', flexShrink: 0,
+        background: disabled ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.18)',
+        cursor: disabled ? 'default' : 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        opacity: disabled ? 0.35 : 1 }}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        {dir === 'left' ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
+      </svg>
+    </button>
+  )
+
   return (
-    <div onClick={onClose} onTouchStart={e => setTouchStart(e.touches[0].clientX)}
+    <div
+      onClick={onClose}
+      onTouchStart={e => setTouchStart(e.touches[0].clientX)}
       onTouchEnd={e => {
         if (touchStart === null) return
         const diff = touchStart - e.changedTouches[0].clientX
@@ -117,27 +139,47 @@ function Lightbox({ images, startIndex, onClose }) {
         if (diff < -50) setCurrent(c => Math.max(0, c - 1))
         setTouchStart(null)
       }}
-      style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(237,237,237,0.55)', backdropFilter: 'blur(22px)', WebkitBackdropFilter: 'blur(22px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000, overflow: 'hidden',
+        background: 'rgba(237,237,237,0.55)',
+        backdropFilter: 'blur(22px)', WebkitBackdropFilter: 'blur(22px)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      }}>
       <button onClick={onClose} style={{ position: 'fixed', top: '20px', right: '24px', background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: '16px', zIndex: 1001 }}>✕</button>
-      <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '90vw' }}>
-        {total > 1 && (
-          <button onClick={() => setCurrent(c => Math.max(0, c - 1))} style={{ width: '44px', height: '44px', borderRadius: '50%', border: 'none', background: current === 0 ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.18)', cursor: current === 0 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: current === 0 ? 0.35 : 1 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-          </button>
-        )}
-        <img src={images[current]} alt={`Screen ${current + 1}`} style={{ maxHeight: '80vh', maxWidth: '78vw', display: 'block', borderRadius: '12px', boxShadow: '0 32px 80px rgba(0,0,0,0.2)' }} />
-        {total > 1 && (
-          <button onClick={() => setCurrent(c => Math.min(total - 1, c + 1))} style={{ width: '44px', height: '44px', borderRadius: '50%', border: 'none', background: current === total - 1 ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.18)', cursor: current === total - 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: current === total - 1 ? 0.35 : 1 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
-          </button>
-        )}
-      </div>
-      {total > 1 && (
-        <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '7px' }}>
-          {images.map((_, i) => (
-            <button key={i} onClick={() => setCurrent(i)} style={{ width: '7px', height: '7px', borderRadius: '50%', background: i === current ? '#333' : '#bbb', border: 'none', padding: 0, cursor: 'pointer', transition: 'background 0.2s' }} />
-          ))}
+
+      {isMobile ? (
+        /* ── Mobile: image fills width, arrows+dots sit below ── */
+        <div onClick={e => e.stopPropagation()} style={{ width: '100%', padding: '0 20px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+          <img src={images[current]} alt={`Screen ${current + 1}`}
+            style={{ width: '100%', maxHeight: '65vh', objectFit: 'contain', display: 'block', borderRadius: '12px', boxShadow: '0 16px 48px rgba(0,0,0,0.18)' }} />
+          {total > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              {arrowBtn('left', current === 0)}
+              <div style={{ display: 'flex', gap: '7px' }}>
+                {images.map((_, i) => (
+                  <button key={i} onClick={() => setCurrent(i)} style={{ width: '7px', height: '7px', borderRadius: '50%', background: i === current ? '#333' : '#bbb', border: 'none', padding: 0, cursor: 'pointer', transition: 'background 0.2s' }} />
+                ))}
+              </div>
+              {arrowBtn('right', current === total - 1)}
+            </div>
+          )}
         </div>
+      ) : (
+        /* ── Desktop: arrows flank image, dots below ── */
+        <>
+          <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '90vw' }}>
+            {total > 1 && arrowBtn('left', current === 0)}
+            <img src={images[current]} alt={`Screen ${current + 1}`} style={{ maxHeight: '80vh', maxWidth: '78vw', display: 'block', borderRadius: '12px', boxShadow: '0 32px 80px rgba(0,0,0,0.2)' }} />
+            {total > 1 && arrowBtn('right', current === total - 1)}
+          </div>
+          {total > 1 && (
+            <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '7px', marginTop: '20px' }}>
+              {images.map((_, i) => (
+                <button key={i} onClick={() => setCurrent(i)} style={{ width: '7px', height: '7px', borderRadius: '50%', background: i === current ? '#333' : '#bbb', border: 'none', padding: 0, cursor: 'pointer', transition: 'background 0.2s' }} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   )
@@ -188,9 +230,65 @@ function ScreenCarousel({ images, isMobile, onImageClick }) {
     }
   }, [total, current])
 
+  const carouselArrowBtn = (dir) => {
+    const atEdge = dir === 'left' ? current === 0 : current === total - 1
+    return (
+      <button key={dir} onClick={() => goTo(dir === 'left' ? current - 1 : current + 1)}
+        style={{
+          width: '34px', height: '34px', borderRadius: '50%', border: 'none', flexShrink: 0,
+          background: 'rgba(0,0,0,0.10)',
+          cursor: atEdge ? 'default' : 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          opacity: atEdge ? 0.25 : 0.8, transition: 'opacity 0.2s',
+        }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          {dir === 'left' ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
+        </svg>
+      </button>
+    )
+  }
+
+  const dots = total > 1 && (
+    <div style={{ display: 'flex', gap: '7px' }}>
+      {images.map((_, i) => (
+        <button key={i} onClick={() => goTo(i)} style={{ width: '7px', height: '7px', borderRadius: '50%', background: i === current ? '#777' : '#ccc', border: 'none', padding: 0, cursor: 'pointer', transition: 'background 0.2s' }} />
+      ))}
+    </div>
+  )
+
+  const imgEl = (
+    <img
+      src={images[current]}
+      alt={`Screen ${current + 1}`}
+      onClick={() => onImageClick && onImageClick(current)}
+      style={{
+        width: '100%', display: 'block', borderRadius: '12px',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.18s ease',
+        cursor: onImageClick ? 'zoom-in' : 'default',
+      }}
+    />
+  )
+
+  if (isMobile) {
+    return (
+      <div style={{ width: '100%', userSelect: 'none' }}>
+        <div ref={containerRef}>{imgEl}</div>
+        {total > 1 && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px', marginTop: '16px' }}>
+            {carouselArrowBtn('left')}
+            {dots}
+            {carouselArrowBtn('right')}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div style={{ width: '100%', userSelect: 'none' }}>
-      {/* Padding creates space beside the image for arrows to sit in, like ridehail */}
+      {/* Padding creates space beside the image for arrows to sit in */}
       <div style={{ position: 'relative', padding: total > 1 ? '0 42px' : '0' }}>
         {total > 1 && ['left', 'right'].map(dir => {
           const atEdge = dir === 'left' ? current === 0 : current === total - 1
@@ -212,20 +310,7 @@ function ScreenCarousel({ images, isMobile, onImageClick }) {
             </button>
           )
         })}
-        <div ref={containerRef}>
-          <img
-            src={images[current]}
-            alt={`Screen ${current + 1}`}
-            onClick={() => onImageClick && onImageClick(current)}
-            style={{
-              width: '100%', display: 'block', borderRadius: '12px',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-              opacity: visible ? 1 : 0,
-              transition: 'opacity 0.18s ease',
-              cursor: onImageClick ? 'zoom-in' : 'default',
-            }}
-          />
-        </div>
+        <div ref={containerRef}>{imgEl}</div>
       </div>
       {total > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: '7px', marginTop: '16px' }}>
@@ -376,7 +461,7 @@ export default function CaseStudyFleet() {
       </div>
 
       {/* ── Lightbox ── */}
-      {lightbox && <Lightbox images={lightbox.images} startIndex={lightbox.index} onClose={closeLightbox} />}
+      {lightbox && <Lightbox images={lightbox.images} startIndex={lightbox.index} onClose={closeLightbox} isMobile={isMobile} />}
 
       {/* ── Grid Footer ── */}
       <GridFooter bg="#ededed" mode="light">
