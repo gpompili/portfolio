@@ -96,9 +96,18 @@ function SectionTitle({ title, subtitle, isMobile }) {
 function Lightbox({ images, startIndex, onClose, isMobile }) {
   const [current, setCurrent] = useState(startIndex)
   const total = images.length
+  const overlayRef = useRef(null)
 
-  // Prevent touchmove scroll bleed on iOS — no body overflow manipulation needed
-  // (body overflow:hidden clips position:fixed portals on Safari)
+  // Block touchmove on the overlay with a non-passive listener so iOS can't
+  // scroll the page underneath. React synthetic events are passive by default
+  // and e.preventDefault() is silently ignored — this is the correct fix.
+  useEffect(() => {
+    const el = overlayRef.current
+    if (!el) return
+    const block = (e) => e.preventDefault()
+    el.addEventListener('touchmove', block, { passive: false })
+    return () => el.removeEventListener('touchmove', block)
+  }, [])
 
   useEffect(() => {
     const handler = (e) => {
@@ -128,6 +137,7 @@ function Lightbox({ images, startIndex, onClose, isMobile }) {
 
   return createPortal(
     <div
+      ref={overlayRef}
       onClick={onClose}
       onTouchStart={e => setTouchStart(e.touches[0].clientX)}
       onTouchEnd={e => {
