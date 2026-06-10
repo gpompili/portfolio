@@ -45,10 +45,12 @@ const IMG = {
     { src: '/assets/ridehail/pickup-s2-3.png', alt: 'Pickup — screen 6' },
   ],
   control: [
-    { src: '/assets/ridehail/control-s1-1.png', alt: 'Control — screen 1' },
-    { src: '/assets/ridehail/control-s1-2.png', alt: 'Control — screen 2' },
-    { src: '/assets/ridehail/control-s2-1.png', alt: 'Control — screen 3' },
-    { src: '/assets/ridehail/control-s2-2.png', alt: 'Control — screen 4' },
+    { src: '/assets/ridehail/control-s1-1.png', alt: 'Control — light mode screen 1' },
+    { src: '/assets/ridehail/control-s1-2.png', alt: 'Control — light mode screen 2' },
+    { src: '/assets/ridehail/control-s1-3.png', alt: 'Control — light mode screen 3' },
+    { src: '/assets/ridehail/control-s2-1.png', alt: 'Control — dark mode screen 1' },
+    { src: '/assets/ridehail/control-s2-2.png', alt: 'Control — dark mode screen 2' },
+    { src: '/assets/ridehail/control-s2-3.png', alt: 'Control — dark mode screen 3' },
   ],
   outcome: [
     { src: '/assets/ridehail/outcome-1.png', alt: 'Outcome 1' },
