@@ -897,10 +897,12 @@ export default function CaseStudyRidehail() {
               [
                 { src: IMG.control[0].src, alt: IMG.control[0].alt },
                 { src: IMG.control[1].src, alt: IMG.control[1].alt },
+                { src: IMG.control[2].src, alt: IMG.control[2].alt },
               ],
               [
-                { src: IMG.control[2].src, alt: IMG.control[2].alt },
                 { src: IMG.control[3].src, alt: IMG.control[3].alt },
+                { src: IMG.control[4].src, alt: IMG.control[4].alt },
+                { src: IMG.control[5].src, alt: IMG.control[5].alt },
               ],
             ]}
             onImageClick={openLightbox}
