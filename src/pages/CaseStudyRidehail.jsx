@@ -359,7 +359,6 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
 
   const total = effectiveSlides.length
   const [current, setCurrent] = useState(0)
-  const [visible, setVisible] = useState(true)
   const containerRef = useRef(null)
 
   // Clamp on slide count change
@@ -370,15 +369,7 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
   const goTo = (next) => {
     const clamped = Math.max(0, Math.min(total - 1, next))
     if (clamped === current) return
-    setVisible(false)
-    setTimeout(() => { setCurrent(clamped); setVisible(true) }, 200)
-  }
-
-  // Subtle scale-down on exit gives a sense of motion without affecting layout
-  const slideStyle = {
-    opacity: visible ? 1 : 0,
-    transform: visible ? 'scale(1)' : 'scale(0.97)',
-    transition: 'opacity 0.2s ease, transform 0.2s ease',
+    setCurrent(clamped)
   }
 
   // Horizontal wheel / two-finger trackpad
@@ -483,15 +474,16 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
         {total > 1 && <ArrowBtn dir="left" />}
         {total > 1 && <ArrowBtn dir="right" />}
 
-        {/* Fade + subtle scale between slides */}
+        {/* key={current} forces remount on navigation → CSS animation fires reliably */}
         <div
+          key={current}
           style={{
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'center',
             gap: '12px',
             padding: isMobile ? '0 52px' : '0',
-            ...slideStyle,
+            animation: 'carouselIn 0.28s ease',
           }}
         >
           {slide.map((phone, j) => {

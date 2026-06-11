@@ -96,6 +96,12 @@
   font-style: italic;
 }
 
+/* ── Carousel slide animation ────────────────────────────────────────────── */
+@keyframes carouselIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
 /* ── Base ─────────────────────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
