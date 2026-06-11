@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import GridFooter from '../components/GridFooter'
@@ -249,6 +250,16 @@ function Phone({ src, alt, width = 230, onClick, noShadow }) {
 function Lightbox({ images, startIndex, onClose }) {
   const [current, setCurrent] = useState(startIndex)
   const total = images.length
+  const overlayRef = useRef(null)
+
+  // Block touchmove with non-passive listener — prevents iOS scroll bleed
+  useEffect(() => {
+    const el = overlayRef.current
+    if (!el) return
+    const block = (e) => e.preventDefault()
+    el.addEventListener('touchmove', block, { passive: false })
+    return () => el.removeEventListener('touchmove', block)
+  }, [])
 
   // Keyboard navigation
   useEffect(() => {
@@ -261,136 +272,81 @@ function Lightbox({ images, startIndex, onClose }) {
     return () => window.removeEventListener('keydown', handler)
   }, [total, onClose])
 
-  // Touch swipe inside lightbox
   const [touchStart, setTouchStart] = useState(null)
-  const handleTouchStart = (e) => setTouchStart(e.touches[0].clientX)
-  const handleTouchEnd = (e) => {
-    if (touchStart === null) return
-    const diff = touchStart - e.changedTouches[0].clientX
-    if (diff > 50) setCurrent((c) => Math.min(total - 1, c + 1))
-    if (diff < -50) setCurrent((c) => Math.max(0, c - 1))
-    setTouchStart(null)
-  }
 
   const ArrowBtn = ({ dir }) => {
     const atEdge = dir === 'left' ? current === 0 : current === total - 1
     return (
       <button
-        onClick={() => setCurrent(c => dir === 'left' ? Math.max(0, c - 1) : Math.min(total - 1, c + 1))}
+        onClick={(e) => { e.stopPropagation(); setCurrent(c => dir === 'left' ? Math.max(0, c - 1) : Math.min(total - 1, c + 1)) }}
         style={{
-          width: '44px',
-          height: '44px',
-          borderRadius: '50%',
-          border: 'none',
+          width: '44px', height: '44px', borderRadius: '50%', border: 'none', flexShrink: 0,
           background: atEdge ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.18)',
           cursor: atEdge ? 'default' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
           opacity: atEdge ? 0.35 : 1,
+          touchAction: 'manipulation',
           transition: 'opacity 0.2s ease, background 0.2s ease',
         }}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          {dir === 'left'
-            ? <path d="M15 18l-6-6 6-6" />
-            : <path d="M9 18l6-6-6-6" />}
+          {dir === 'left' ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
         </svg>
       </button>
     )
   }
 
-  return (
+  return createPortal(
     <div
+      ref={overlayRef}
       onClick={onClose}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      onTouchStart={e => setTouchStart(e.touches[0].clientX)}
+      onTouchEnd={e => {
+        if (touchStart === null) return
+        const diff = touchStart - e.changedTouches[0].clientX
+        if (diff > 50) setCurrent(c => Math.min(total - 1, c + 1))
+        if (diff < -50) setCurrent(c => Math.max(0, c - 1))
+        setTouchStart(null)
+      }}
       style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 1000,
-        background: 'rgba(237,237,237,0.55)',
-        backdropFilter: 'blur(22px)',
-        WebkitBackdropFilter: 'blur(22px)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '20px',
+        position: 'fixed', inset: 0, zIndex: 1000, overflow: 'hidden',
+        background: 'rgba(237,237,237,0.96)',
+        backdropFilter: 'blur(22px)', WebkitBackdropFilter: 'blur(22px)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px',
       }}
     >
-      {/* Close button */}
       <button
-        onClick={onClose}
+        onClick={(e) => { e.stopPropagation(); onClose() }}
         style={{
-          position: 'fixed',
-          top: '20px',
-          right: '24px',
-          background: 'rgba(0,0,0,0.1)',
-          border: 'none',
-          borderRadius: '50%',
-          width: '36px',
-          height: '36px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#333',
-          fontSize: '16px',
-          zIndex: 1001,
+          position: 'fixed', top: '20px', right: '24px', zIndex: 1001,
+          background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '50%',
+          width: '44px', height: '44px', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#333', fontSize: '16px', touchAction: 'manipulation',
         }}
-      >
-        ✕
-      </button>
+      >✕</button>
 
-      {/* Image + side arrows */}
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{ display: 'flex', alignItems: 'center', gap: '16px' }}
-      >
+      <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '90vw' }}>
         {total > 1 && <ArrowBtn dir="left" />}
-
         <img
           src={images[current].src}
           alt={images[current].alt}
-          style={{
-            maxHeight: '78vh',
-            maxWidth: '72vw',
-            display: 'block',
-            borderRadius: '27px',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.2)',
-          }}
+          style={{ maxHeight: '78vh', maxWidth: '72vw', display: 'block', borderRadius: '27px', boxShadow: '0 32px 80px rgba(0,0,0,0.2)' }}
         />
-
         {total > 1 && <ArrowBtn dir="right" />}
       </div>
 
-      {/* Dot indicators */}
       {total > 1 && (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          style={{ display: 'flex', gap: '7px' }}
-        >
+        <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '7px' }}>
           {images.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: i === current ? '#333' : '#bbb',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                transition: 'background 0.2s ease',
-              }}
+            <button key={i} onClick={(e) => { e.stopPropagation(); setCurrent(i) }}
+              style={{ width: '7px', height: '7px', borderRadius: '50%', background: i === current ? '#333' : '#bbb', border: 'none', padding: 0, cursor: 'pointer', touchAction: 'manipulation', transition: 'background 0.2s ease' }}
             />
           ))}
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -403,7 +359,9 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
 
   const total = effectiveSlides.length
   const [current, setCurrent] = useState(0)
-  const [visible, setVisible] = useState(true)
+  // phase: 'in' | 'out' | 'pre-in'  — drives directional fade+slide animation
+  const [phase, setPhase] = useState('in')
+  const [direction, setDirection] = useState(1) // 1 = forward, -1 = back
   const containerRef = useRef(null)
 
   // Clamp on slide count change
@@ -414,9 +372,20 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
   const goTo = (next) => {
     const clamped = Math.max(0, Math.min(total - 1, next))
     if (clamped === current) return
-    setVisible(false)
-    setTimeout(() => { setCurrent(clamped); setVisible(true) }, 180)
+    setDirection(clamped > current ? 1 : -1)
+    setPhase('out')
+    setTimeout(() => {
+      setCurrent(clamped)
+      setPhase('pre-in')
+      // Double rAF: let browser paint the 'pre-in' position before animating in
+      requestAnimationFrame(() => requestAnimationFrame(() => setPhase('in')))
+    }, 180)
   }
+
+  const slideStyle =
+    phase === 'out'   ? { opacity: 0, transform: `translateX(${direction * -22}px)`, transition: 'opacity 0.18s ease, transform 0.18s ease' } :
+    phase === 'pre-in'? { opacity: 0, transform: `translateX(${direction * 22}px)`,  transition: 'none' } :
+                        { opacity: 1, transform: 'translateX(0)',                     transition: 'opacity 0.22s ease, transform 0.22s ease' }
 
   // Horizontal wheel / two-finger trackpad
   useEffect(() => {
@@ -495,6 +464,7 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
           alignItems: 'center',
           justifyContent: 'center',
           opacity: atEdge ? 0.25 : 0.85,
+          touchAction: 'manipulation',
           transition: 'opacity 0.2s ease',
         }}
       >
@@ -519,7 +489,7 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
         {total > 1 && <ArrowBtn dir="left" />}
         {total > 1 && <ArrowBtn dir="right" />}
 
-        {/* Crossfade between slides — no clipping needed */}
+        {/* Directional fade+slide between slides */}
         <div
           style={{
             display: 'flex',
@@ -527,8 +497,7 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
             justifyContent: 'center',
             gap: '12px',
             padding: isMobile ? '0 52px' : '0',
-            opacity: visible ? 1 : 0,
-            transition: 'opacity 0.18s ease',
+            ...slideStyle,
           }}
         >
           {slide.map((phone, j) => {
@@ -585,17 +554,15 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
         ))}
       </div>
 
-      {/* Slide annotation — maps mobile's split slides back to original group */}
+      {/* Annotation — always visible, updates with current slide */}
       {annotations && (() => {
-        let annotationIndex = 0
+        let annotationIndex = current
         if (isMobile) {
           let count = 0
           for (let i = 0; i < slides.length; i++) {
             count += slides[i].length
             if (current < count) { annotationIndex = i; break }
           }
-        } else {
-          annotationIndex = current
         }
         const label = annotations[annotationIndex]
         return label ? (
@@ -606,8 +573,6 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
             fontWeight: 500,
             letterSpacing: '0.05em',
             color: '#aaa',
-            opacity: visible ? 1 : 0,
-            transition: 'opacity 0.18s ease',
           }}>
             {label}
           </div>
@@ -810,6 +775,7 @@ export default function CaseStudyRidehail() {
         right={
           <PhoneCarousel
             isMobile={isMobile}
+            annotations={['Demo app', 'Demo app', 'Engineering app', 'Engineering app']}
             slides={[
               [
                 { src: IMG.whereto[0].src, alt: IMG.whereto[0].alt },
@@ -869,6 +835,7 @@ export default function CaseStudyRidehail() {
         right={
           <PhoneCarousel
             isMobile={isMobile}
+            annotations={['Demo app', 'Engineering app']}
             slides={[
               [
                 { src: IMG.pickup[0].src, alt: IMG.pickup[0].alt },
