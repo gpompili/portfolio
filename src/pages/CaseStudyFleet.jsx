@@ -389,18 +389,18 @@ export default function CaseStudyFleet() {
         }
       />
 
-      {/* ── 2. The invisible layer ── */}
+      {/* ── 2. Under the hood ── */}
       <CaseSection
         {...bp} bg="#ffffff"
         left={
           <>
-            <SectionTitle title="The invisible layer" subtitle="What autonomy still requires" isMobile={isMobile} />
+            <SectionTitle title="Under the hood" subtitle="What driverless requires at scale" isMobile={isMobile} />
             <Label style={{ marginTop: 0 }}>Context</Label>
-            <BodyText>Every AV company operating at real-world scale relies on remote human oversight. It's rarely talked about, because it complicates the "fully autonomous" story — but it's the operational reality.</BodyText>
+            <BodyText>Every AV company operating at real-world scale relies on remote human oversight. It's rarely talked about, because it complicates the "fully autonomous" story.</BodyText>
             <Label>The tension</Label>
-            <BodyText>Vehicles marketed as driverless still require operators watching from offsite — ready to intervene if something goes wrong. The question isn't whether humans are in the loop. It's how well the tools support them when they are.</BodyText>
+            <BodyText>Vehicles marketed as driverless still require operators watching from offsite who are ready to intervene if something goes wrong. It can be an uncomfortable reality for autonomy purists. As a result, this piece of the story is controversial, infrequently talked about, and sometimes under-invested in.</BodyText>
             <Label>The gap</Label>
-            <BodyText>At May Mobility, the fleet monitoring product existed. But it had never received the design attention needed to support operators at true driverless scale. There was no PM. Feature development was reactive.</BodyText>
+            <BodyText>At May Mobility, the fleet monitoring product existed. But it had never received the design attention needed to support operators at true driverless scale. There was no PM. Feature development was reactive. That's the reality I was presented with and the challenge I got excited about confronting.</BodyText>
           </>
         }
         right={<ScreenCarousel images={IMG.monitoring1} isMobile={isMobile} onImageClick={i => openLightbox(IMG.monitoring1, i)} />}
