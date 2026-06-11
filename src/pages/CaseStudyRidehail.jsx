@@ -396,7 +396,7 @@ function Lightbox({ images, startIndex, onClose }) {
 
 // ─── Phone carousel ──────────────────────────────────────────────────────────
 
-function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
+function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations }) {
   const effectiveSlides = isMobile
     ? slides.flatMap((slide) => slide.map((phone) => [phone]))
     : slides
@@ -584,6 +584,35 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns }) {
           />
         ))}
       </div>
+
+      {/* Slide annotation — maps mobile's split slides back to original group */}
+      {annotations && (() => {
+        let annotationIndex = 0
+        if (isMobile) {
+          let count = 0
+          for (let i = 0; i < slides.length; i++) {
+            count += slides[i].length
+            if (current < count) { annotationIndex = i; break }
+          }
+        } else {
+          annotationIndex = current
+        }
+        const label = annotations[annotationIndex]
+        return label ? (
+          <div style={{
+            textAlign: 'center',
+            marginTop: '10px',
+            fontSize: '11px',
+            fontWeight: 500,
+            letterSpacing: '0.05em',
+            color: '#aaa',
+            opacity: visible ? 1 : 0,
+            transition: 'opacity 0.18s ease',
+          }}>
+            {label}
+          </div>
+        ) : null
+      })()}
     </div>
   )
 }
@@ -672,6 +701,9 @@ export default function CaseStudyRidehail() {
               Designing autonomous ridehail for testing and demonstration
             </p>
 
+            <Label>What was built</Label>
+            <BodyText>Two purpose-built versions of the same app: a polished demo app for investor site visits, and a mobile engineering tool for daily test rides.</BodyText>
+
             <Label>Objectives</Label>
             <NumberedItem n={1}>Eliminate the need for engineers to carry bulky laptops during test rides</NumberedItem>
             <NumberedItem n={2}>Enable investors to request rides during site visits</NumberedItem>
@@ -726,6 +758,7 @@ export default function CaseStudyRidehail() {
         right={
           <PhoneCarousel
             isMobile={isMobile}
+            annotations={['Demo app', 'Engineering app']}
             slides={[
               [
                 { src: IMG.expectation[0].src, alt: IMG.expectation[0].alt },
@@ -893,6 +926,7 @@ export default function CaseStudyRidehail() {
           <PhoneCarousel
             isMobile={isMobile}
             columns={3}
+            annotations={['Light mode · Demo app', 'Dark mode · Engineering app']}
             slides={[
               [
                 { src: IMG.control[0].src, alt: IMG.control[0].alt },
