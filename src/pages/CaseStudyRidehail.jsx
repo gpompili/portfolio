@@ -359,9 +359,7 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
 
   const total = effectiveSlides.length
   const [current, setCurrent] = useState(0)
-  // phase: 'in' | 'out' | 'pre-in'  — drives directional fade+slide animation
-  const [phase, setPhase] = useState('in')
-  const [direction, setDirection] = useState(1) // 1 = forward, -1 = back
+  const [visible, setVisible] = useState(true)
   const containerRef = useRef(null)
 
   // Clamp on slide count change
@@ -372,20 +370,16 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
   const goTo = (next) => {
     const clamped = Math.max(0, Math.min(total - 1, next))
     if (clamped === current) return
-    setDirection(clamped > current ? 1 : -1)
-    setPhase('out')
-    setTimeout(() => {
-      setCurrent(clamped)
-      setPhase('pre-in')
-      // Double rAF: let browser paint the 'pre-in' position before animating in
-      requestAnimationFrame(() => requestAnimationFrame(() => setPhase('in')))
-    }, 180)
+    setVisible(false)
+    setTimeout(() => { setCurrent(clamped); setVisible(true) }, 200)
   }
 
-  const slideStyle =
-    phase === 'out'   ? { opacity: 0, transform: `translateX(${direction * -22}px)`, transition: 'opacity 0.18s ease, transform 0.18s ease' } :
-    phase === 'pre-in'? { opacity: 0, transform: `translateX(${direction * 22}px)`,  transition: 'none' } :
-                        { opacity: 1, transform: 'translateX(0)',                     transition: 'opacity 0.22s ease, transform 0.22s ease' }
+  // Subtle scale-down on exit gives a sense of motion without affecting layout
+  const slideStyle = {
+    opacity: visible ? 1 : 0,
+    transform: visible ? 'scale(1)' : 'scale(0.97)',
+    transition: 'opacity 0.2s ease, transform 0.2s ease',
+  }
 
   // Horizontal wheel / two-finger trackpad
   useEffect(() => {
@@ -489,7 +483,7 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
         {total > 1 && <ArrowBtn dir="left" />}
         {total > 1 && <ArrowBtn dir="right" />}
 
-        {/* Directional fade+slide between slides */}
+        {/* Fade + subtle scale between slides */}
         <div
           style={{
             display: 'flex',
@@ -893,7 +887,7 @@ export default function CaseStudyRidehail() {
           <PhoneCarousel
             isMobile={isMobile}
             columns={3}
-            annotations={['Light mode · Demo app', 'Dark mode · Engineering app']}
+            annotations={['Demo app', 'Engineering app']}
             slides={[
               [
                 { src: IMG.control[0].src, alt: IMG.control[0].alt },
