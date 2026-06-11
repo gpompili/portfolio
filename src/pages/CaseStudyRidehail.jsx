@@ -360,6 +360,8 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
   const total = effectiveSlides.length
   const [current, setCurrent] = useState(0)
   const containerRef = useRef(null)
+  const slideRef = useRef(null)
+  const animating = useRef(false)
 
   // Clamp on slide count change
   useEffect(() => {
@@ -368,8 +370,25 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
 
   const goTo = (next) => {
     const clamped = Math.max(0, Math.min(total - 1, next))
-    if (clamped === current) return
-    setCurrent(clamped)
+    if (clamped === current || animating.current) return
+    const el = slideRef.current
+    if (!el) return
+    animating.current = true
+
+    // 1. Fade out
+    el.style.transition = 'opacity 0.2s ease'
+    el.style.opacity = '0'
+
+    setTimeout(() => {
+      // 2. Swap content while invisible
+      setCurrent(clamped)
+      // 3. Wait 32ms so React commits new DOM before fading in
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.35s ease'
+        el.style.opacity = '1'
+        setTimeout(() => { animating.current = false }, 360)
+      }, 32)
+    }, 210)
   }
 
   // Horizontal wheel / two-finger trackpad
@@ -474,16 +493,15 @@ function PhoneCarousel({ slides, isMobile, onImageClick, columns, annotations })
         {total > 1 && <ArrowBtn dir="left" />}
         {total > 1 && <ArrowBtn dir="right" />}
 
-        {/* key={current} forces remount on navigation → CSS animation fires reliably */}
+        {/* Persistent div — opacity animated via ref to avoid React batching / remount blink */}
         <div
-          key={current}
+          ref={slideRef}
           style={{
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'center',
             gap: '12px',
             padding: isMobile ? '0 52px' : '0',
-            animation: 'carouselIn 0.28s ease',
           }}
         >
           {slide.map((phone, j) => {
