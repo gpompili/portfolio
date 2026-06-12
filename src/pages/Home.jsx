@@ -671,7 +671,7 @@ export default function Home() {
               lineHeight: 1.15,
             }}
           >
-            Sole Product Designer at May Mobility, shaping autonomous vehicle rider, fleet, and safety experiences that supported over $100M in funding in 2025.
+            Sole Product Designer at May Mobility, shaping autonomous vehicle rider, fleet, and safety experiences that supported over $100M in funding in 2025
           </h2>
         </div>
       </section>
