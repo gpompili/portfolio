@@ -381,7 +381,7 @@ export default function CaseStudyFleet() {
             <NumberedItem n={1} bold>An event notification system that distributed real-time fleet signals across site staff</NumberedItem>
             <NumberedItem n={2} bold>A flexible UI that balances many needs, informed by user types and the tasks most important to them</NumberedItem>
             <Label>My contribution</Label>
-            <BodyText>With no dedicated PM on the product, I embedded with operations, built a working relationship with the engineering manager, and drove product-level thinking on what the system needed to do to unlock fully-autonomous operational capabilities.</BodyText>
+            <BodyText>With no dedicated PM on the product, I embedded with operations, built a working relationship with the engineering manager, and drove product-level thinking on what the system needed to do to unlock fully-autonomous operational capabilities</BodyText>
           </>
         }
         right={
