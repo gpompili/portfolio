@@ -85,6 +85,24 @@ const interests = [
   },
 ]
 
+// ─── useInView ───────────────────────────────────────────────────────────────
+
+function useInView(threshold = 0.12) {
+  const ref = useRef(null)
+  const [inView, setInView] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setInView(true); obs.disconnect() } },
+      { threshold }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [threshold])
+  return [ref, inView]
+}
+
 // ─── Nav ─────────────────────────────────────────────────────────────────────
 
 function Nav({ scrolled, activeSection, onNavClick, isMobile, isTablet }) {
@@ -280,10 +298,19 @@ function Nav({ scrolled, activeSection, onNavClick, isMobile, isTablet }) {
 
 // ─── Project Card ─────────────────────────────────────────────────────────────
 
-function ProjectCard({ project, isMobile, isTablet }) {
+function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
   const [hovered, setHovered] = useState(false)
+  const [cardRef, inView] = useInView(0.08)
 
   return (
+    <div
+      ref={cardRef}
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? 'translateY(0)' : 'translateY(28px)',
+        transition: `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`,
+      }}
+    >
     <Link
       to={project.href}
       onMouseEnter={() => setHovered(true)}
@@ -379,6 +406,7 @@ function ProjectCard({ project, isMobile, isTablet }) {
         }}
       />
     </Link>
+    </div>
   )
 }
 
@@ -580,7 +608,13 @@ export default function Home() {
   const { isMobile, isTablet } = useBreakpoint()
   const [scrolled, setScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState('work')
+  const [heroVisible, setHeroVisible] = useState(false)
   const heroRef = useRef(null)
+
+  useEffect(() => {
+    const t = setTimeout(() => setHeroVisible(true), 80)
+    return () => clearTimeout(t)
+  }, [])
 
   const scrollToSection = (id) => {
     if (id === 'work') {
@@ -656,9 +690,29 @@ export default function Home() {
                 marginBottom: '6px',
               }}
             >
-              Gabriel Pompilius
+              {['Gabriel', 'Pompilius'].map((word, i) => (
+                <span
+                  key={i}
+                  style={{
+                    display: 'inline-block',
+                    opacity: heroVisible ? 1 : 0,
+                    transform: heroVisible ? 'translateY(0)' : 'translateY(12px)',
+                    transition: `opacity 0.55s ease ${i * 0.12}s, transform 0.55s ease ${i * 0.12}s`,
+                    marginRight: i < 1 ? '0.28em' : 0,
+                  }}
+                >
+                  {word}
+                </span>
+              ))}
             </h1>
-            <p style={{ fontSize: '26px', color: '#666', fontWeight: 500 }}>Product Designer</p>
+            <p style={{
+              fontSize: '26px',
+              color: '#666',
+              fontWeight: 500,
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? 'translateY(0)' : 'translateY(8px)',
+              transition: 'opacity 0.5s ease 0.36s, transform 0.5s ease 0.36s',
+            }}>Product Designer</p>
           </div>
         )}
 
@@ -669,6 +723,11 @@ export default function Home() {
               fontWeight: isMobile ? 600 : 800,
               color: '#fff',
               lineHeight: 1.15,
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? 'translateY(0)' : 'translateY(14px)',
+              transition: (isMobile || isTablet)
+                ? 'opacity 0.65s ease 0.15s, transform 0.65s ease 0.15s'
+                : 'opacity 0.65s ease 0.48s, transform 0.65s ease 0.48s',
             }}
           >
             Sole Product Designer at May Mobility, shaping autonomous vehicle rider, fleet, and safety experiences that supported over $100M in funding in 2025
@@ -685,8 +744,8 @@ export default function Home() {
           margin: '0 auto',
         }}
       >
-        {projects.map((p) => (
-          <ProjectCard key={p.id} project={p} isMobile={isMobile} isTablet={isTablet} />
+        {projects.map((p, i) => (
+          <ProjectCard key={p.id} project={p} isMobile={isMobile} isTablet={isTablet} index={i} />
         ))}
       </section>
 
