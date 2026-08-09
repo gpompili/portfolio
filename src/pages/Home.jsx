@@ -302,68 +302,80 @@ function Nav({ scrolled, activeSection, onNavClick, isMobile, isTablet }) {
 
 // ─── Project Card ─────────────────────────────────────────────────────────────
 
-function VideoWithFade({ video, color }) {
-  const videoRef = useRef(null)
-  const overlayRef = useRef(null)
+function VideoWithFade({ video }) {
+  const refA = useRef(null)
+  const refB = useRef(null)
   const rafRef = useRef(null)
-  const FADE = 2.0 // seconds
+  const stateRef = useRef({ active: 'a', fading: false })
+  const FADE = 2.0
 
   useEffect(() => {
-    const v = videoRef.current
-    const o = overlayRef.current
-    if (!v || !o) return
+    const a = refA.current
+    const b = refB.current
+    if (!a || !b) return
 
-    // Cosine easing: slow start, slow end — feels seamless
     const ease = (p) => (1 - Math.cos(Math.PI * p)) / 2
 
+    const getPair = () => stateRef.current.active === 'a'
+      ? { cur: a, nxt: b }
+      : { cur: b, nxt: a }
+
     const tick = () => {
-      if (v.duration) {
-        const t = v.currentTime
-        const remaining = v.duration - t
-        let opacity = 0
-        if (remaining < FADE) {
-          opacity = ease(1 - remaining / FADE)       // fade out
-        } else if (t < FADE) {
-          opacity = ease(1 - t / FADE)               // fade in
+      const { fading } = stateRef.current
+      const { cur, nxt } = getPair()
+
+      if (cur.duration) {
+        const remaining = cur.duration - cur.currentTime
+
+        if (!fading && remaining < FADE) {
+          stateRef.current.fading = true
+          nxt.currentTime = 0
+          nxt.play().catch(() => {})
         }
-        o.style.opacity = opacity
+
+        if (fading) {
+          const progress = Math.max(0, Math.min(1, 1 - remaining / FADE))
+          const eased = ease(progress)
+          cur.style.opacity = 1 - eased
+          nxt.style.opacity = eased
+
+          if (remaining < 0.05) {
+            cur.style.opacity = 0
+            nxt.style.opacity = 1
+            cur.pause()
+            cur.currentTime = 0
+            stateRef.current = {
+              active: stateRef.current.active === 'a' ? 'b' : 'a',
+              fading: false,
+            }
+          }
+        }
       }
+
       rafRef.current = requestAnimationFrame(tick)
     }
 
+    a.play().catch(() => {})
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
   }, [])
 
+  const videoStyle = {
+    position: 'absolute', top: 0, left: 0,
+    width: '100%', height: '100%',
+    objectFit: 'cover',
+  }
+
   return (
     <>
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        loop
-        playsInline
-        style={{
-          position: 'absolute',
-          top: 0, left: 0,
-          width: '100%', height: '100%',
-          objectFit: 'cover',
-        }}
-      >
+      <video ref={refA} muted playsInline preload="auto" style={{ ...videoStyle, opacity: 1 }}>
         <source src={video.webm} type="video/webm" />
         <source src={video.mp4} type="video/mp4" />
       </video>
-      <div
-        ref={overlayRef}
-        style={{
-          position: 'absolute',
-          top: 0, left: 0,
-          width: '100%', height: '100%',
-          backgroundColor: color,
-          opacity: 1,
-          pointerEvents: 'none',
-        }}
-      />
+      <video ref={refB} muted playsInline preload="auto" style={{ ...videoStyle, opacity: 0 }}>
+        <source src={video.webm} type="video/webm" />
+        <source src={video.mp4} type="video/mp4" />
+      </video>
     </>
   )
 }
@@ -478,7 +490,7 @@ function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
         }}
       >
         {project.video && (
-          <VideoWithFade video={project.video} color={project.color} />
+          <VideoWithFade video={project.video} />
         )}
       </div>
     </Link>
