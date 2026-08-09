@@ -306,12 +306,15 @@ function VideoWithFade({ video, color }) {
   const videoRef = useRef(null)
   const overlayRef = useRef(null)
   const rafRef = useRef(null)
-  const FADE = 1.2 // seconds
+  const FADE = 2.0 // seconds
 
   useEffect(() => {
     const v = videoRef.current
     const o = overlayRef.current
     if (!v || !o) return
+
+    // Cosine easing: slow start, slow end — feels seamless
+    const ease = (p) => (1 - Math.cos(Math.PI * p)) / 2
 
     const tick = () => {
       if (v.duration) {
@@ -319,9 +322,9 @@ function VideoWithFade({ video, color }) {
         const remaining = v.duration - t
         let opacity = 0
         if (remaining < FADE) {
-          opacity = 1 - remaining / FADE
+          opacity = ease(1 - remaining / FADE)       // fade out
         } else if (t < FADE) {
-          opacity = 1 - t / FADE
+          opacity = ease(1 - t / FADE)               // fade in
         }
         o.style.opacity = opacity
       }
