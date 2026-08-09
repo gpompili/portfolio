@@ -27,6 +27,10 @@ const projects = [
     description: '',
     color: '#D9D9D9',
     cover: '/assets/incar/InCarUICover.svg',
+    video: {
+      webm: '/assets/incar/rider-hero.webm',
+      mp4: '/assets/incar/rider-hero.mp4',
+    },
     href: '/work/incar',
   },
   {
@@ -396,15 +400,35 @@ function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
       <div
         style={{
           backgroundColor: project.color,
-          backgroundImage: project.cover ? `url(${project.cover})` : 'none',
+          backgroundImage: project.video ? 'none' : (project.cover ? `url(${project.cover})` : 'none'),
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           flex: isMobile ? undefined : 1,
           height: isMobile ? '200px' : '100%',
           width: isMobile ? '100%' : undefined,
+          position: 'relative',
+          overflow: 'hidden',
         }}
-      />
+      >
+        {project.video && (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            style={{
+              position: 'absolute',
+              top: 0, left: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover',
+            }}
+          >
+            <source src={project.video.webm} type="video/webm" />
+            <source src={project.video.mp4} type="video/mp4" />
+          </video>
+        )}
+      </div>
     </Link>
     </div>
   )
