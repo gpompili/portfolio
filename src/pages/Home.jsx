@@ -302,6 +302,64 @@ function Nav({ scrolled, activeSection, onNavClick, isMobile, isTablet }) {
 
 // ─── Project Card ─────────────────────────────────────────────────────────────
 
+function VideoWithFade({ video, color }) {
+  const videoRef = useRef(null)
+  const overlayRef = useRef(null)
+  const FADE = 0.8 // seconds
+
+  useEffect(() => {
+    const v = videoRef.current
+    const o = overlayRef.current
+    if (!v || !o) return
+    const handleTimeUpdate = () => {
+      if (!v.duration) return
+      const t = v.currentTime
+      const remaining = v.duration - t
+      if (remaining < FADE) {
+        o.style.opacity = 1 - remaining / FADE
+      } else if (t < FADE) {
+        o.style.opacity = 1 - t / FADE
+      } else {
+        o.style.opacity = 0
+      }
+    }
+    v.addEventListener('timeupdate', handleTimeUpdate)
+    return () => v.removeEventListener('timeupdate', handleTimeUpdate)
+  }, [])
+
+  return (
+    <>
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        loop
+        playsInline
+        style={{
+          position: 'absolute',
+          top: 0, left: 0,
+          width: '100%', height: '100%',
+          objectFit: 'cover',
+        }}
+      >
+        <source src={video.webm} type="video/webm" />
+        <source src={video.mp4} type="video/mp4" />
+      </video>
+      <div
+        ref={overlayRef}
+        style={{
+          position: 'absolute',
+          top: 0, left: 0,
+          width: '100%', height: '100%',
+          backgroundColor: color,
+          opacity: 0,
+          pointerEvents: 'none',
+        }}
+      />
+    </>
+  )
+}
+
 function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
   const [hovered, setHovered] = useState(false)
   const [cardRef, inView] = useInView(0.08)
@@ -412,21 +470,7 @@ function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
         }}
       >
         {project.video && (
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            style={{
-              position: 'absolute',
-              top: 0, left: 0,
-              width: '100%', height: '100%',
-              objectFit: 'cover',
-            }}
-          >
-            <source src={project.video.webm} type="video/webm" />
-            <source src={project.video.mp4} type="video/mp4" />
-          </video>
+          <VideoWithFade video={project.video} color={project.color} />
         )}
       </div>
     </Link>
