@@ -305,26 +305,31 @@ function Nav({ scrolled, activeSection, onNavClick, isMobile, isTablet }) {
 function VideoWithFade({ video, color }) {
   const videoRef = useRef(null)
   const overlayRef = useRef(null)
-  const FADE = 0.8 // seconds
+  const rafRef = useRef(null)
+  const FADE = 1.2 // seconds
 
   useEffect(() => {
     const v = videoRef.current
     const o = overlayRef.current
     if (!v || !o) return
-    const handleTimeUpdate = () => {
-      if (!v.duration) return
-      const t = v.currentTime
-      const remaining = v.duration - t
-      if (remaining < FADE) {
-        o.style.opacity = 1 - remaining / FADE
-      } else if (t < FADE) {
-        o.style.opacity = 1 - t / FADE
-      } else {
-        o.style.opacity = 0
+
+    const tick = () => {
+      if (v.duration) {
+        const t = v.currentTime
+        const remaining = v.duration - t
+        let opacity = 0
+        if (remaining < FADE) {
+          opacity = 1 - remaining / FADE
+        } else if (t < FADE) {
+          opacity = 1 - t / FADE
+        }
+        o.style.opacity = opacity
       }
+      rafRef.current = requestAnimationFrame(tick)
     }
-    v.addEventListener('timeupdate', handleTimeUpdate)
-    return () => v.removeEventListener('timeupdate', handleTimeUpdate)
+
+    rafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafRef.current)
   }, [])
 
   return (
@@ -352,7 +357,7 @@ function VideoWithFade({ video, color }) {
           top: 0, left: 0,
           width: '100%', height: '100%',
           backgroundColor: color,
-          opacity: 0,
+          opacity: 1,
           pointerEvents: 'none',
         }}
       />
