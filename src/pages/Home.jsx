@@ -27,9 +27,13 @@ const projects = [
     description: '',
     color: '#D9D9D9',
     cover: '/assets/incar/InCarUICover.svg',
-    video: {
-      webm: '/assets/incar/rider-hero.webm',
-      mp4: '/assets/incar/rider-hero.mp4',
+    deviceVideo: {
+      bezel: '/assets/incar/bezel-device.png',
+      bezelWidth: 1672,
+      bezelHeight: 941,
+      screen: { x: 321, y: 182, w: 1022, h: 553 },
+      poster: '/assets/incar/rider-immersive-clip/rider-immersive-clip-poster.jpg',
+      mp4: '/assets/incar/rider-immersive.mp4',
     },
     href: '/work/incar',
   },
@@ -380,6 +384,81 @@ function VideoWithFade({ video }) {
   )
 }
 
+// Renders a video "inside" a device bezel image: the bezel PNG has a
+// transparent cutout where its screen is, and this positions/scales a
+// <video> underneath so it lines up with that cutout at any card size.
+// The math mirrors CSS object-fit: cover so the video tracks the bezel
+// image's crop exactly as the container is resized.
+function DeviceHeroVideo({ deviceVideo }) {
+  const { bezel, bezelWidth, bezelHeight, screen, poster, mp4 } = deviceVideo
+  const containerRef = useRef(null)
+  const [rect, setRect] = useState(null)
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    const update = () => {
+      const cw = el.clientWidth
+      const ch = el.clientHeight
+      if (!cw || !ch) return
+      const scale = Math.max(cw / bezelWidth, ch / bezelHeight)
+      const renderedW = bezelWidth * scale
+      const renderedH = bezelHeight * scale
+      const offsetX = (cw - renderedW) / 2
+      const offsetY = (ch - renderedH) / 2
+      setRect({
+        left: offsetX + screen.x * scale,
+        top: offsetY + screen.y * scale,
+        width: screen.w * scale,
+        height: screen.h * scale,
+      })
+    }
+
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [bezelWidth, bezelHeight, screen])
+
+  return (
+    <div ref={containerRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+      {rect && (
+        <video
+          muted
+          autoPlay
+          loop
+          playsInline
+          preload="auto"
+          poster={poster}
+          src={mp4}
+          style={{
+            position: 'absolute',
+            left: `${rect.left}px`,
+            top: `${rect.top}px`,
+            width: `${rect.width}px`,
+            height: `${rect.height}px`,
+            objectFit: 'cover',
+          }}
+        />
+      )}
+      <img
+        src={bezel}
+        alt=""
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          pointerEvents: 'none',
+        }}
+      />
+    </div>
+  )
+}
+
 function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
   const [hovered, setHovered] = useState(false)
   const [cardRef, inView] = useInView(0.08)
@@ -478,7 +557,7 @@ function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
       <div
         style={{
           backgroundColor: project.color,
-          backgroundImage: project.video ? 'none' : (project.cover ? `url(${project.cover})` : 'none'),
+          backgroundImage: (project.video || project.deviceVideo) ? 'none' : (project.cover ? `url(${project.cover})` : 'none'),
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -491,6 +570,9 @@ function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
       >
         {project.video && (
           <VideoWithFade video={project.video} />
+        )}
+        {project.deviceVideo && (
+          <DeviceHeroVideo deviceVideo={project.deviceVideo} />
         )}
       </div>
     </Link>
