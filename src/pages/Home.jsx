@@ -28,11 +28,10 @@ const projects = [
     color: '#D9D9D9',
     cover: '/assets/incar/InCarUICover.svg',
     deviceVideo: {
-      bezel: '/assets/incar/console-bezel.jpg',
+      bezel: '/assets/incar/incarhero.png',
       bezelWidth: 1672,
       bezelHeight: 941,
-      screen: { x: 625, y: 509, w: 424, h: 234 },
-      videoOnTop: true,
+      screen: { x: 625, y: 507, w: 422, h: 237 },
       poster: '/assets/incar/rider-immersive-clip/rider-immersive-clip-poster.jpg',
       mp4: '/assets/incar/rider-immersive.mp4',
     },
