@@ -384,13 +384,25 @@ function VideoWithFade({ video }) {
   )
 }
 
-// Renders a video "inside" a device bezel image: the bezel PNG has a
-// transparent cutout where its screen is, and this positions/scales a
-// <video> underneath so it lines up with that cutout at any card size.
+// Renders a video "inside" a device bezel image, positioning/scaling the
+// <video> so it lines up with the bezel's screen area at any card size.
 // The math mirrors CSS object-fit: cover so the video tracks the bezel
 // image's crop exactly as the container is resized.
+//
+// Two bezel asset types are supported, picked via videoOnTop:
+//  - transparent cutout (videoOnTop false/undefined): the bezel PNG has a
+//    real alpha hole where its screen is, painted ON TOP of the video so
+//    the cutout naturally clips it.
+//  - flat rendered screen (videoOnTop true): the bezel image has an
+//    opaque flat-black screen with no transparency, so the video paints
+//    ON TOP of the bezel, sized exactly to the screen rect to cover it.
+//
+// cornerRadius (fraction of the rendered screen width, default 0.025)
+// rounds the video's own corners to match the screen glass — belt-and-
+// suspenders for the cutout case (the mask already rounds it) and
+// necessary for the flat-screen/videoOnTop case (nothing else would).
 function DeviceHeroVideo({ deviceVideo }) {
-  const { bezel, bezelWidth, bezelHeight, screen, poster, mp4 } = deviceVideo
+  const { bezel, bezelWidth, bezelHeight, screen, poster, mp4, videoOnTop, cornerRadius = 0.025 } = deviceVideo
   const containerRef = useRef(null)
   const [rect, setRect] = useState(null)
 
@@ -421,40 +433,56 @@ function DeviceHeroVideo({ deviceVideo }) {
     return () => ro.disconnect()
   }, [bezelWidth, bezelHeight, screen])
 
+  const video = rect && (
+    <video
+      muted
+      autoPlay
+      loop
+      playsInline
+      preload="auto"
+      poster={poster}
+      src={mp4}
+      style={{
+        position: 'absolute',
+        left: `${rect.left}px`,
+        top: `${rect.top}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+        borderRadius: `${rect.width * cornerRadius}px`,
+        objectFit: 'cover',
+      }}
+    />
+  )
+
+  const bezelImg = (
+    <img
+      src={bezel}
+      alt=""
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        pointerEvents: 'none',
+      }}
+    />
+  )
+
   return (
     <div ref={containerRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-      {rect && (
-        <video
-          muted
-          autoPlay
-          loop
-          playsInline
-          preload="auto"
-          poster={poster}
-          src={mp4}
-          style={{
-            position: 'absolute',
-            left: `${rect.left}px`,
-            top: `${rect.top}px`,
-            width: `${rect.width}px`,
-            height: `${rect.height}px`,
-            objectFit: 'cover',
-          }}
-        />
+      {videoOnTop ? (
+        <>
+          {bezelImg}
+          {video}
+        </>
+      ) : (
+        <>
+          {video}
+          {bezelImg}
+        </>
       )}
-      <img
-        src={bezel}
-        alt=""
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          pointerEvents: 'none',
-        }}
-      />
     </div>
   )
 }
