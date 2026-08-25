@@ -32,6 +32,7 @@ const projects = [
       bezelWidth: 1672,
       bezelHeight: 941,
       screen: { x: 625, y: 507, w: 422, h: 237 },
+      cornerRadius: 0,
       poster: '/assets/incar/rider-immersive-clip/rider-immersive-clip-poster.jpg',
       mp4: '/assets/incar/rider-immersive.mp4',
     },
