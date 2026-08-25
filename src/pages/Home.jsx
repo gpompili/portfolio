@@ -397,8 +397,13 @@ function VideoWithFade({ video }) {
 //  - flat rendered screen (videoOnTop true): the bezel image has an
 //    opaque flat-black screen with no transparency, so the video paints
 //    ON TOP of the bezel, sized exactly to the screen rect to cover it.
+//
+// cornerRadius (fraction of the rendered screen width, default 0.025)
+// rounds the video's own corners to match the screen glass — belt-and-
+// suspenders for the cutout case (the mask already rounds it) and
+// necessary for the flat-screen/videoOnTop case (nothing else would).
 function DeviceHeroVideo({ deviceVideo }) {
-  const { bezel, bezelWidth, bezelHeight, screen, poster, mp4, videoOnTop } = deviceVideo
+  const { bezel, bezelWidth, bezelHeight, screen, poster, mp4, videoOnTop, cornerRadius = 0.025 } = deviceVideo
   const containerRef = useRef(null)
   const [rect, setRect] = useState(null)
 
@@ -444,6 +449,7 @@ function DeviceHeroVideo({ deviceVideo }) {
         top: `${rect.top}px`,
         width: `${rect.width}px`,
         height: `${rect.height}px`,
+        borderRadius: `${rect.width * cornerRadius}px`,
         objectFit: 'cover',
       }}
     />
