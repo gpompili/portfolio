@@ -22,6 +22,9 @@ const T = {
   edgeFill: 'rgba(255,255,255,.06)',
   edgeBorder: '#4D4D4D',
   edgeChevron: 'rgba(255,255,255,.25)',
+  pillBg: 'rgba(255,255,255,.06)',
+  pillBorder: '#333333',
+  divider: '#333333',
 }
 
 const FONT = "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -93,7 +96,8 @@ const BUTTONS = {
 const BUTTON_GROUPS = [['music', 'climate'], ['support', 'settings']]
 
 // §5 — control button: 56 tall, radius 28 pill, padding 0 28, icon 32,
-// gap 10, label 24/300/34. Support = cPrimary, the rest cSecondary.
+// gap 10, label 24/300/34. Default no fill (the visible fill/border lives
+// one level up, on the cluster pill). Support = cPrimary, the rest cSecondary.
 function ControlButton({ id }) {
   const { icon, label } = BUTTONS[id]
   const color = id === 'support' ? T.cPrimary : T.cSecondary
@@ -111,6 +115,29 @@ function ControlButton({ id }) {
     >
       <Icon name={icon} size={32} color={color} />
       <span style={{ color, fontSize: 24, fontWeight: 300, lineHeight: '34px', fontFamily: FONT }}>{label}</span>
+    </div>
+  )
+}
+
+// §5 — cluster pill: 72 tall, 8px padding, radius 36, pillBg + 0.5px
+// pillBorder, wraps each button pair. Divider 0.5×40 with 8px clearance
+// between the two buttons.
+function ClusterPill({ ids }) {
+  return (
+    <div
+      style={{
+        height: 72,
+        padding: 8,
+        borderRadius: 36,
+        background: T.pillBg,
+        border: `0.5px solid ${T.pillBorder}`,
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
+      <ControlButton id={ids[0]} />
+      <div style={{ width: 0.5, height: 40, background: T.divider, margin: '0 8px' }} />
+      <ControlButton id={ids[1]} />
     </div>
   )
 }
@@ -193,7 +220,7 @@ export default function RiderScreenUI({
         <EdgeSwitcher side="right" />
       </div>
 
-      {/* Bottom control strip (§5): two pairs, within-pair gap 32, between-pair gap 112, centered */}
+      {/* Bottom control strip (§5): two cluster pills, between-pair gap 112, centered */}
       <div
         style={{
           position: 'absolute',
@@ -208,11 +235,7 @@ export default function RiderScreenUI({
         }}
       >
         {BUTTON_GROUPS.map((group, gi) => (
-          <div key={gi} style={{ display: 'flex', gap: 32 }}>
-            {group.map((id) => (
-              <ControlButton key={id} id={id} />
-            ))}
-          </div>
+          <ClusterPill key={gi} ids={group} />
         ))}
       </div>
     </div>

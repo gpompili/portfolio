@@ -29,10 +29,15 @@ const projects = [
     color: '#D9D9D9',
     cover: '/assets/incar/InCarUICover.svg',
     deviceVideo: {
-      bezel: '/assets/incar/incarhero.png',
-      bezelWidth: 1672,
-      bezelHeight: 941,
-      screen: { x: 625, y: 507, w: 422, h: 237 },
+      // Cropped tighter than the original incarhero.png — trims off the
+      // steering wheel/windshield/dash visible at the top of the original
+      // photo so the console+screen fill more of the card, and so the
+      // static dash doesn't read as "the car isn't moving" against the
+      // Immersive UI's implied forward motion.
+      bezel: '/assets/incar/incarhero-crop.png',
+      bezelWidth: 1352,
+      bezelHeight: 606,
+      screen: { x: 465, y: 172, w: 421, h: 236 },
       cornerRadius: 0,
       screenUI: true,
       poster: '/assets/incar/rider-immersive-clip/rider-immersive-clip-poster.jpg',
