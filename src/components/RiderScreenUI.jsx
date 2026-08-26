@@ -1,11 +1,15 @@
 // Static (non-interactive) recreation of the in-cabin rider display's
 // Immersive view, built against the "In-Cabin Rider Experience — Multi-View"
-// eng spec (§1 tokens, §5 control buttons, §11 iconography), adapted for
-// this hero-card context: the physical bezel PHOTO is already the device
-// frame, so the video plays edge-to-edge behind it (no separate inset
-// scene / dark surround / edge view-switchers — those assumed the UI was
-// framing its own screen, which the bezel cutout already does here) and the
-// ETA header + control strip float directly over the footage.
+// eng spec (§1 tokens, §5 control buttons, §11 iconography).
+//
+// The dark surround (insetBg) IS part of the UI — it's the display's own
+// bottom-level surface that the video scene and control strip render on
+// top of, matching the real product chrome. This whole unit — surround
+// included — sits entirely BEHIND the bezel photo mockup in
+// DeviceHeroVideo (painted first, with the photo's alpha-cutout painted on
+// top of it), so only what falls inside the cutout's rectangle ever shows;
+// nothing here should bleed past that hole onto the visible photo.
+// No edge view-switchers here — this hero-card context doesn't need them.
 //
 // Rendered at a fixed 1923×1083 canvas and scaled down by the caller (via
 // CSS transform) to fit whatever screen rect it's placed into.
@@ -13,14 +17,21 @@
 const UI_WIDTH = 1923
 const UI_HEIGHT = 1083
 
+// Reserved layout: 16px inset margin around the video scene, 104px bottom
+// strip for controls, 22px scene corner radius — mirrors the real display's
+// own screen-within-bezel framing.
+const INSET_PAD = 16
+const STRIP_H = 104
+const SCENE_RADIUS = 22
+
 // §1 — dark-surface tokens this frame uses.
 const T = {
+  insetBg: '#060709',
   heading: '#FFFFFF',
   greeting: '#B2B2B2',
   cPrimary: '#FFFFFF',
   cSecondary: '#E5E5E5',
-  etaScrimTop: 'rgba(0,0,0,.6)',
-  bottomScrim: 'rgba(0,0,0,.55)',
+  etaScrimTop: 'rgba(0,0,0,.58)',
   pillBg: 'rgba(255,255,255,.06)',
   pillBorder: '#333333',
   divider: '#333333',
@@ -117,72 +128,70 @@ export default function RiderScreenUI({
         position: 'relative',
         fontFamily: FONT,
         overflow: 'hidden',
+        background: T.insetBg,
       }}
     >
-      {/* Video plays edge-to-edge — the bezel photo's own cutout is the
-          device frame, so there's no separate dark surround/inset scene
-          here (unlike the spec's standalone-display context). Nothing but
-          the video and its overlays renders in this component, so nothing
-          shows outside the bezel's alpha hole. */}
-      <video
-        muted
-        autoPlay
-        loop
-        playsInline
-        preload="auto"
-        poster={poster}
-        src={mp4}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-      />
-
-      {/* etaScrimTop gradient so the pinned header reads over bright footage */}
+      {/* Inset video scene — the display's own dark surround (this
+          component's outer background) frames it on all sides except the
+          bottom, which is reserved for the control strip below. */}
       <div
         style={{
           position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '42%',
-          background: `linear-gradient(to bottom, ${T.etaScrimTop}, rgba(0,0,0,0))`,
-          pointerEvents: 'none',
+          top: INSET_PAD,
+          left: INSET_PAD,
+          right: INSET_PAD,
+          bottom: STRIP_H,
+          borderRadius: SCENE_RADIUS,
+          overflow: 'hidden',
         }}
-      />
+      >
+        <video
+          muted
+          autoPlay
+          loop
+          playsInline
+          preload="auto"
+          poster={poster}
+          src={mp4}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
 
-      {/* Bottom scrim so the control strip reads over bright footage —
-          replaces the spec's solid insetBg strip now that there's no
-          reserved dark surround to sit on. */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '34%',
-          background: `linear-gradient(to top, ${T.bottomScrim}, rgba(0,0,0,0))`,
-          pointerEvents: 'none',
-        }}
-      />
+        {/* etaScrimTop gradient so the pinned header reads over bright footage */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '42%',
+            background: `linear-gradient(to bottom, ${T.etaScrimTop}, rgba(0,0,0,0))`,
+            pointerEvents: 'none',
+          }}
+        />
 
-      {/* Pinned ETA header — sizes exaggerated over the raw spec values (see
-          prior notes: literal 30/86 overwhelmed the frame; measuring Gabe's
-          reference screenshot landed on 20/56, and this pass bumps that up
-          further ~1.25x for legibility at hero-card scale). */}
-      <div style={{ position: 'absolute', top: 40, left: 0, right: 0, textAlign: 'center' }}>
-        <div style={{ fontSize: 25, fontWeight: 500, lineHeight: '31px', letterSpacing: 0, color: T.greeting, marginBottom: 8 }}>
-          Heading to {destination}
-        </div>
-        <div style={{ fontSize: 70, fontWeight: 600, lineHeight: '80px', letterSpacing: '-1.25px', color: T.heading }}>
-          Arriving in {etaMinutes} min at {etaTime}
+        {/* Pinned ETA header — sizes exaggerated over the raw spec values
+            (literal 30/86 overwhelmed the frame; measuring Gabe's reference
+            screenshot landed on 20/56; this pass bumps that up further
+            ~1.25x for legibility at hero-card scale). */}
+        <div style={{ position: 'absolute', top: 40, left: 0, right: 0, textAlign: 'center' }}>
+          <div style={{ fontSize: 25, fontWeight: 500, lineHeight: '31px', letterSpacing: 0, color: T.greeting, marginBottom: 8 }}>
+            Heading to {destination}
+          </div>
+          <div style={{ fontSize: 70, fontWeight: 600, lineHeight: '80px', letterSpacing: '-1.25px', color: T.heading }}>
+            Arriving in {etaMinutes} min at {etaTime}
+          </div>
         </div>
       </div>
 
-      {/* Bottom control strip (§5): two cluster pills, centered */}
+      {/* Bottom control strip (§5): two cluster pills, centered, sitting
+          directly on the insetBg surface. */}
       <div
         style={{
           position: 'absolute',
           left: 0,
           right: 0,
-          bottom: 36,
+          bottom: 0,
+          height: STRIP_H,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
