@@ -594,6 +594,12 @@ function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
           width: isMobile ? '100%' : undefined,
           position: 'relative',
           overflow: 'hidden',
+          // Match the card's own outer corner radius on this element (rather than
+          // relying solely on the parent Link's overflow:hidden clip) — otherwise
+          // sub-pixel flex-layout rounding can leave a hairline gap right at the
+          // rounded corner arc, exposing the card's light background color as a
+          // faint lighter fringe against dark video/bezel content.
+          borderRadius: isMobile ? '0 0 16px 16px' : '0 16px 16px 0',
         }}
       >
         {project.video && (
