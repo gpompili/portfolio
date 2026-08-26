@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import GridFooter from '../components/GridFooter'
+import RiderScreenUI, { UI_WIDTH, UI_HEIGHT } from '../components/RiderScreenUI'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,7 @@ const projects = [
       bezelHeight: 941,
       screen: { x: 625, y: 507, w: 422, h: 237 },
       cornerRadius: 0,
+      screenUI: true,
       poster: '/assets/incar/rider-immersive-clip/rider-immersive-clip-poster.jpg',
       mp4: '/assets/incar/rider-immersive.mp4',
     },
@@ -435,24 +437,64 @@ function DeviceHeroVideo({ deviceVideo }) {
   }, [bezelWidth, bezelHeight, screen])
 
   const video = rect && (
-    <video
-      muted
-      autoPlay
-      loop
-      playsInline
-      preload="auto"
-      poster={poster}
-      src={mp4}
-      style={{
-        position: 'absolute',
-        left: `${rect.left}px`,
-        top: `${rect.top}px`,
-        width: `${rect.width}px`,
-        height: `${rect.height}px`,
-        borderRadius: `${rect.width * cornerRadius}px`,
-        objectFit: 'cover',
-      }}
-    />
+    deviceVideo.screenUI ? (
+      // Full device screen simulation: the real product UI (ETA header, edge
+      // switchers, bottom control strip) with the video playing inside its
+      // own inset scene, authored at the eng spec's fixed 1923×1083 canvas
+      // and scaled down uniformly to fill this rect — keeps every font size
+      // and proportion exactly as specified no matter how small the final
+      // card ends up.
+      <div
+        style={{
+          position: 'absolute',
+          left: `${rect.left}px`,
+          top: `${rect.top}px`,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+          borderRadius: `${rect.width * cornerRadius}px`,
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: `${UI_WIDTH}px`,
+            height: `${UI_HEIGHT}px`,
+            transform: `scale(${rect.width / UI_WIDTH})`,
+            transformOrigin: 'top left',
+          }}
+        >
+          <RiderScreenUI
+            mp4={mp4}
+            poster={poster}
+            destination={deviceVideo.destination}
+            etaMinutes={deviceVideo.etaMinutes}
+            etaTime={deviceVideo.etaTime}
+          />
+        </div>
+      </div>
+    ) : (
+      <video
+        muted
+        autoPlay
+        loop
+        playsInline
+        preload="auto"
+        poster={poster}
+        src={mp4}
+        style={{
+          position: 'absolute',
+          left: `${rect.left}px`,
+          top: `${rect.top}px`,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+          borderRadius: `${rect.width * cornerRadius}px`,
+          objectFit: 'cover',
+        }}
+      />
+    )
   )
 
   const bezelImg = (
