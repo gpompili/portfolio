@@ -159,7 +159,20 @@ export default function RiderScreenUI({
           preload="auto"
           poster={poster}
           src={mp4}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            // The source footage's own gray/blue tones sit close in
+            // brightness to insetBg (#D7D7E0), so the video reads as
+            // barely distinct from its surround and the buttons. A modest
+            // brightness lift pushes it visibly lighter/whiter than both,
+            // restoring the screen-vs-chrome contrast the light surface
+            // needs.
+            filter: 'brightness(1.1)',
+          }}
         />
 
         {/* etaScrimTop gradient so the pinned header reads over bright footage */}
@@ -177,10 +190,11 @@ export default function RiderScreenUI({
 
         {/* Pinned ETA header — sizes exaggerated over the raw spec values
             (literal 30/86 overwhelmed the frame; measuring Gabe's reference
-            screenshot landed on 20/56; this pass bumps that up further
-            ~1.25x for legibility at hero-card scale). */}
+            screenshot landed on 20/56; a later pass bumped that up ~1.25x
+            for legibility at hero-card scale; greeting bumped again here,
+            25→34, per Gabe's request). */}
         <div style={{ position: 'absolute', top: 40, left: 0, right: 0, textAlign: 'center' }}>
-          <div style={{ fontSize: 25, fontWeight: 500, lineHeight: '31px', letterSpacing: 0, color: T.greeting, marginBottom: 8 }}>
+          <div style={{ fontSize: 34, fontWeight: 500, lineHeight: '42px', letterSpacing: 0, color: T.greeting, marginBottom: 6 }}>
             Heading to {destination}
           </div>
           <div style={{ fontSize: 70, fontWeight: 600, lineHeight: '80px', letterSpacing: '-1.25px', color: T.heading }}>
