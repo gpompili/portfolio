@@ -2,13 +2,15 @@
 // Immersive view, built against the "In-Cabin Rider Experience — Multi-View"
 // eng spec (§1 tokens, §5 control buttons, §11 iconography).
 //
-// The dark surround (insetBg) IS part of the UI — it's the display's own
-// bottom-level surface that the video scene and control strip render on
-// top of, matching the real product chrome. This whole unit — surround
-// included — sits entirely BEHIND the bezel photo mockup in
-// DeviceHeroVideo (painted first, with the photo's alpha-cutout painted on
-// top of it), so only what falls inside the cutout's rectangle ever shows;
-// nothing here should bleed past that hole onto the visible photo.
+// Uses the spec's LIGHT surface tokens (§1: pageBg/insetBg/etc. "Light"
+// column) rather than dark — matches Gabe's reference. The insetBg surround
+// IS part of the UI — it's the display's own bottom-level surface that the
+// video scene and control strip render on top of, matching the real
+// product chrome. This whole unit — surround included — sits entirely
+// BEHIND the bezel photo mockup in DeviceHeroVideo (painted first, with the
+// photo's alpha-cutout painted on top of it), so only what falls inside the
+// cutout's rectangle ever shows; nothing here should bleed past that hole
+// onto the visible photo.
 // No edge view-switchers here — this hero-card context doesn't need them.
 //
 // Rendered at a fixed 1923×1083 canvas and scaled down by the caller (via
@@ -17,24 +19,28 @@
 const UI_WIDTH = 1923
 const UI_HEIGHT = 1083
 
-// Reserved layout: 16px inset margin around the video scene, 104px bottom
-// strip for controls, 22px scene corner radius — mirrors the real display's
-// own screen-within-bezel framing.
+// Reserved layout: 16px inset margin around the video scene (top/left/
+// right), 22px scene corner radius. The bottom strip follows the spec's own
+// formula (§3): INSET_BOTTOM = 16 (gap above the controls) + control height
+// + 16 (gap below the controls, to the display's bottom edge) — using our
+// enlarged CLUSTER_H (90, vs. the spec's literal 72) in place of the spec's
+// control height so the 16px margins hold at this scale.
 const INSET_PAD = 16
-const STRIP_H = 104
 const SCENE_RADIUS = 22
+const CLUSTER_H = 90
+const STRIP_H = INSET_PAD + CLUSTER_H + INSET_PAD
 
-// §1 — dark-surface tokens this frame uses.
+// §1 — light-surface tokens this frame uses (spec §1 "Light" column).
 const T = {
-  insetBg: '#060709',
-  heading: '#FFFFFF',
-  greeting: '#B2B2B2',
-  cPrimary: '#FFFFFF',
-  cSecondary: '#E5E5E5',
-  etaScrimTop: 'rgba(0,0,0,.58)',
-  pillBg: 'rgba(255,255,255,.06)',
-  pillBorder: '#333333',
-  divider: '#333333',
+  insetBg: '#D7D7E0',
+  heading: '#1A1A1A',
+  greeting: '#8A8A8A',
+  cPrimary: '#1A1A1A',
+  cSecondary: '#3A3A3A',
+  etaScrimTop: 'rgba(232,232,240,.86)',
+  pillBg: 'rgba(0,0,0,.05)',
+  pillBorder: 'rgba(0,0,0,.16)',
+  divider: 'rgba(0,0,0,.16)',
 }
 
 const FONT = "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -97,7 +103,7 @@ function ClusterPill({ ids }) {
   return (
     <div
       style={{
-        height: 90,
+        height: CLUSTER_H,
         padding: 10,
         borderRadius: 45,
         background: T.pillBg,
@@ -184,7 +190,10 @@ export default function RiderScreenUI({
       </div>
 
       {/* Bottom control strip (§5): two cluster pills, centered, sitting
-          directly on the insetBg surface. */}
+          directly on the insetBg surface. STRIP_H = 16 + CLUSTER_H + 16, so
+          centering the CLUSTER_H-tall pills in this box yields exactly a
+          16px gap above (below the scene) and 16px below (to the display's
+          bottom edge) — no extra padding needed. */}
       <div
         style={{
           position: 'absolute',
