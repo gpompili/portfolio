@@ -575,7 +575,16 @@ function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
         height: isMobile ? 'auto' : isTablet ? '420px' : '500px',
         textDecoration: 'none',
         cursor: 'pointer',
-        background: project.color,
+        // This Link is the element that actually owns the rounded-corner
+        // clip (borderRadius + overflow:hidden above) — it's ITS background
+        // the browser blends the corner anti-aliasing against, not the
+        // inner color/image area div's (that was the wrong element to fix
+        // first time around: setting only the inner div's background left
+        // this outer one still light, so the corner fringe persisted).
+        // Same reasoning as the inner div below: dark neutral close to the
+        // bezel photo's edge tones for deviceVideo cards, project.color
+        // otherwise.
+        background: project.deviceVideo ? '#141416' : project.color,
         marginBottom: '24px',
         transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
         boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.09)' : '0 2px 8px rgba(0,0,0,0.04)',
