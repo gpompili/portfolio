@@ -40,6 +40,11 @@ const projects = [
       screen: { x: 465, y: 172, w: 421, h: 236 },
       cornerRadius: 0,
       screenUI: true,
+      // Crops in further than a plain object-fit:cover fill so the console
+      // screen reads larger within the card at each breakpoint — desktop
+      // gets a modest crop, tablet/mobile crop in more since the card is
+      // smaller there and the UI needs the extra size to stay legible.
+      zoom: { desktop: 1.12, tablet: 1.25, mobile: 1.3 },
       poster: '/assets/incar/rider-immersive-clip/rider-immersive-clip-poster.jpg',
       mp4: '/assets/incar/rider-immersive.mp4',
     },
@@ -409,10 +414,20 @@ function VideoWithFade({ video }) {
 // rounds the video's own corners to match the screen glass — belt-and-
 // suspenders for the cutout case (the mask already rounds it) and
 // necessary for the flat-screen/videoOnTop case (nothing else would).
-function DeviceHeroVideo({ deviceVideo }) {
-  const { bezel, bezelWidth, bezelHeight, screen, poster, mp4, videoOnTop, cornerRadius = 0.025 } = deviceVideo
+//
+// deviceVideo.zoom (optional {desktop,tablet,mobile}) crops in tighter than
+// a plain object-fit:cover fill — the whole bezel image (and, since it's
+// derived from the same scale factor, the screen rect within it) is scaled
+// up around the container's center and the container's own overflow:hidden
+// clips the excess. The bezel <img> is sized via this same JS math rather
+// than a plain CSS object-fit:cover fill so it zooms in lockstep with the
+// screen rect and stays aligned with the alpha cutout at any zoom level.
+function DeviceHeroVideo({ deviceVideo, isMobile, isTablet }) {
+  const { bezel, bezelWidth, bezelHeight, screen, poster, mp4, videoOnTop, cornerRadius = 0.025, zoom: zoomConfig } = deviceVideo
+  const zoom = zoomConfig ? (isMobile ? zoomConfig.mobile : isTablet ? zoomConfig.tablet : zoomConfig.desktop) ?? 1 : 1
   const containerRef = useRef(null)
   const [rect, setRect] = useState(null)
+  const [bezelRect, setBezelRect] = useState(null)
 
   useEffect(() => {
     const el = containerRef.current
@@ -422,11 +437,12 @@ function DeviceHeroVideo({ deviceVideo }) {
       const cw = el.clientWidth
       const ch = el.clientHeight
       if (!cw || !ch) return
-      const scale = Math.max(cw / bezelWidth, ch / bezelHeight)
+      const scale = Math.max(cw / bezelWidth, ch / bezelHeight) * zoom
       const renderedW = bezelWidth * scale
       const renderedH = bezelHeight * scale
       const offsetX = (cw - renderedW) / 2
       const offsetY = (ch - renderedH) / 2
+      setBezelRect({ left: offsetX, top: offsetY, width: renderedW, height: renderedH })
       setRect({
         left: offsetX + screen.x * scale,
         top: offsetY + screen.y * scale,
@@ -439,7 +455,7 @@ function DeviceHeroVideo({ deviceVideo }) {
     const ro = new ResizeObserver(update)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [bezelWidth, bezelHeight, screen])
+  }, [bezelWidth, bezelHeight, screen, zoom])
 
   const video = rect && (
     deviceVideo.screenUI ? (
@@ -502,17 +518,16 @@ function DeviceHeroVideo({ deviceVideo }) {
     )
   )
 
-  const bezelImg = (
+  const bezelImg = bezelRect && (
     <img
       src={bezel}
       alt=""
       style={{
         position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
+        left: `${bezelRect.left}px`,
+        top: `${bezelRect.top}px`,
+        width: `${bezelRect.width}px`,
+        height: `${bezelRect.height}px`,
         pointerEvents: 'none',
       }}
     />
@@ -632,7 +647,17 @@ function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
       {/* Color / image area */}
       <div
         style={{
-          backgroundColor: project.color,
+          // For deviceVideo cards, the rounded-corner clip (border-radius +
+          // overflow:hidden below) anti-aliases against whatever this div's
+          // own background is — with project.color (a light gray, #D9D9D9)
+          // that showed through as a faint light sliver right at the
+          // corner arc against the bezel photo's near-black edges. Using a
+          // dark neutral close to the bezel's own edge tone here instead
+          // makes that anti-aliased pixel blend in rather than stand out.
+          // (Scoped to deviceVideo specifically, not the plain `video`
+          // case, since a future plain-video card isn't guaranteed to have
+          // dark edges the way this bezel photo does.)
+          backgroundColor: (project.video ? project.color : project.deviceVideo ? '#141416' : project.color),
           backgroundImage: (project.video || project.deviceVideo) ? 'none' : (project.cover ? `url(${project.cover})` : 'none'),
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -654,7 +679,7 @@ function ProjectCard({ project, isMobile, isTablet, index = 0 }) {
           <VideoWithFade video={project.video} />
         )}
         {project.deviceVideo && (
-          <DeviceHeroVideo deviceVideo={project.deviceVideo} />
+          <DeviceHeroVideo deviceVideo={project.deviceVideo} isMobile={isMobile} isTablet={isTablet} />
         )}
       </div>
     </Link>
